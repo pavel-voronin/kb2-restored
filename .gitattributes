@@ -1,0 +1,9 @@
+# Preserve DOS encodings and CRLF bytes when checking out source files.
+* -text
+*.PCX binary
+*.PIC binary
+*.FNT binary
+*.DAT binary
+*.EXE binary
+*.DOC binary
+*.zip binary
