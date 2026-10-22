@@ -3,55 +3,9 @@ unit KBState;
 
 interface
 
-uses KBTables;
+uses KBTypes;
 
 type
-  TPosition = packed record
-    X, Y: byte
-  end;
-
-  TSignedPosition = packed record
-    X, Y: shortint
-  end;
-
-  TContract = packed record
-    Island, Slot: byte
-  end;
-
-  TRelic = packed record
-    Artwork: byte;
-    Owned: boolean
-  end;
-
-  TArmyStack = packed record
-    Species: byte;
-    Count: word
-  end;
-
-  TWanderingArmy = packed record
-    X, Y: byte;
-    Species: array[0..4] of byte;
-    Counts: array[0..4] of word;
-  end;
-
-  TCastle = packed record
-    X, Y, Name: byte;
-    Owned: boolean;
-    Species: array[0..4] of byte;
-    Counts: array[0..4] of word;
-    Value: longint;
-  end;
-
-  TTown = packed record
-    X, Y, Name, Scroll: byte;
-    Workers: array[1..4] of byte;
-  end;
-
-  TDwelling = packed record
-    X, Y, Species: byte;
-    Count: word
-  end;
-
   TGameState = packed record
     DataFileName: string[12];
     Unknown_0C4B: array[1..1] of byte;

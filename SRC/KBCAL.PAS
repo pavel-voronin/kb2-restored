@@ -1,3 +1,14 @@
+unit KBCal;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+procedure EndWeek;
+
+implementation
+
+uses KBState, KBTables, KBUI, KBGfx, KBInput, KBWorld, KBCampgn, KBAdvent;
+
 procedure EndWeek;
 var
   Payroll, Largest, Cost: longint;
@@ -209,3 +220,5 @@ begin
   Game.LastScan := ReadScanCode;
   HeaderPrompt(0);
 end;
+
+end.

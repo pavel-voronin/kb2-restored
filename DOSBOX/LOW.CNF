@@ -1,0 +1,21 @@
+[dosbox]
+machine=ega
+memsize=1
+
+[cpu]
+core=normal
+cputype=286
+cycles=fixed 700
+
+[video]
+vmemsizekb=256
+
+[dos]
+xms=false
+ems=false
+umb=false
+
+[autoexec]
+mount c .
+c:
+call RUN.BAT

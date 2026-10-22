@@ -3,7 +3,7 @@ unit KBWorld;
 
 interface
 
-uses KBState;
+uses KBTypes, KBState;
 
 procedure ForgetDiscovery;
 
@@ -17,9 +17,11 @@ procedure GenerateWorld(Level: byte);
 
 procedure PlaceInitialHero(Level: byte);
 
+procedure RelocateArmy(Island, Slot: byte);
+
 implementation
 
-uses KBTables;
+uses KBRandom, KBTables;
 
 procedure ForgetDiscovery;
 begin
@@ -183,7 +185,7 @@ begin
   Game.PaperChartPresent[5] := false;
   Game.SceneIsland := 1;
   Game.ShipHeading := 1;
-  Randomize;
+  RandomizeGame;
 
   for I := 0 to 7 do
   begin
@@ -497,6 +499,17 @@ begin
       Game.Hero.X := Random(65);
       Game.Hero.Y := Random(65);
     until Game.Map[1, Game.Hero.X, Game.Hero.Y] = 0;
+end;
+
+procedure RelocateArmy(Island, Slot: byte);
+begin
+  repeat
+    Game.GenerationX := Random(65);
+    Game.GenerationY := Random(65);
+  until Game.Map[Island, Game.GenerationX, Game.GenerationY] = 0;
+  Game.WanderingArmies[Island, Slot].X := Game.GenerationX;
+  Game.WanderingArmies[Island, Slot].Y := Game.GenerationY;
+  Game.Map[Island, Game.GenerationX, Game.GenerationY] := 5;
 end;
 
 end.

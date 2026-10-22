@@ -3,7 +3,7 @@ unit KBAdvent;
 
 interface
 
-uses KBState;
+uses KBTypes, KBState;
 
 type
   PRoamingActor = ^TRoamingActor;
@@ -68,7 +68,7 @@ procedure MapVisit(Island: byte);
 
 implementation
 
-uses KBGfx, KBTables, KBBattle, KBWorld, KBSound, Crt;
+uses KBFiles, KBArt, KBUI, KBInput, KBGfx, KBTables, KBBattle, KBWorld, KBSound, Crt;
 
 function CountRitualSpells: byte;
 var

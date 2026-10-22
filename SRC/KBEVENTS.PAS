@@ -3,7 +3,7 @@ unit KBEvents;
 
 interface
 
-uses KBState;
+uses KBTypes, KBState;
 
 procedure BlackMage;
 
@@ -11,7 +11,7 @@ procedure TalkingStoneVisit;
 
 implementation
 
-uses KBGfx, KBTables, KBBattle, KBWorld, KBAdvent;
+uses KBFiles, KBUI, KBInput, KBGfx, KBTables, KBBattle, KBWorld, KBAdvent;
 
 type
   TWorkshopState = packed record

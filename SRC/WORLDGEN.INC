@@ -348,7 +348,7 @@ begin
 
   for Game.GenerationIsland := 1 to 5 do
   begin
-    Randomize;
+    RandomizeGame;
 
     if Game.GenerationIsland > 1 then ScatterGrass(Level);
     if Game.GenerationIsland <> 3 then ScatterForest(Level);

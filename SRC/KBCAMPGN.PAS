@@ -3,7 +3,7 @@ unit KBCampgn;
 
 interface
 
-uses KBState;
+uses KBTypes, KBState;
 
 procedure SetGraphicsMode(GameMode: byte);
 
@@ -35,7 +35,8 @@ procedure CastleVisit;
 
 implementation
 
-uses KBGfx, KBTables, KBBattle, KBAdvent, KBSound, KBWorld, Crt;
+uses KBFiles, KBArt, KBUI, KBInput, KBGfx, KBTables, KBBattle, KBAdvent, KBSound,
+  KBWorld, Crt;
 
 procedure SetGraphicsMode(GameMode: byte);
 begin

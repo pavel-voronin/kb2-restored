@@ -3,23 +3,7 @@ unit KBTables;
 
 interface
 
-type
-  TDirection = packed record
-    X, Y: shortint
-  end;
-
-  TCreatureCost = packed record
-    case boolean of
-      false: (Price: word);
-      true: (Weeks, Appearance: byte);
-  end;
-
-  TCreatureDefinition = packed record
-    Name: string[9];
-    Cost: TCreatureCost;
-    Movement, Flags: byte;
-    Defense, Attack: word;
-  end;
+uses KBTypes;
 
 const
   UnknownProgramPrefix: array[1..12] of byte = (

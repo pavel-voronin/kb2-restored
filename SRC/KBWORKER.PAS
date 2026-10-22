@@ -1,3 +1,14 @@
+unit KBWorker;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+procedure WorkersMenu(Island: byte);
+
+implementation
+
+uses KBState, KBTypes, KBTables, KBUI, KBView, KBGfx, KBInput, KBAdvent, Crt;
+
 procedure WorkersMenu(Island: byte);
 var
   Number: string[2];
@@ -122,3 +133,5 @@ begin
   else Game.LastScan := 48;
   end;
 end;
+
+end.
