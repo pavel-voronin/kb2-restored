@@ -10,49 +10,51 @@ procedure StartupMenu;
 
 implementation
 
-uses KBRandom, Dos, KBState, KBTypes, KBTables, KBFiles, KBGfx, KBInput, KBSave, KBWorld;
+uses KBInit, KBLpt, KBGen, KBRandom, Dos, KBState, KBTables, KBFiles, KBGfx, KBInput, KBSave;
 
 procedure InitializeRuntime;
 begin
+  InitializeLegacyState;
+  InitializePrinter;
   RandomizeGame;
-  Game.FontPointer := @Game.Font;
-  Game.DataFileName := 'KB2.DAT';
-  Game.FontFileName := 'KB2.FNT';
-  Game.MoneyFileName := 'MONEY.PIC';
-  Game.WorldMapRedraw := 0;
-  Game.TownPictureLoaded := true;
-  Game.WorkerRestockPhase := true;
-  Game.RegrowthPosition.X := 100;
-  Game.RegrowthCountdown := 0;
+  Game.Runtime.FontPointer := @Game.Runtime.Font;
+  Game.Runtime.DataFileName := 'KB2.DAT';
+  Game.Runtime.FontFileName := 'KB2.FNT';
+  Game.Runtime.MoneyFileName := 'MONEY.PIC';
+  Game.Runtime.WorldMapRedraw := 0;
+  Game.Runtime.TownPictureLoaded := true;
+  Game.Runtime.WorkerRestockPhase := true;
+  Game.Runtime.RegrowthPosition.X := 100;
+  Game.Runtime.RegrowthCountdown := 0;
 end;
 
 procedure LoadTitle;
 begin
-  Game.PicturePage := 32768;
+  Game.Runtime.PicturePage := 32768;
   SetVideoPage(0);
-  Game.PictureFileName := 'TITL.PIC';
+  Game.Runtime.PictureFileName := 'TITL.PIC';
   LoadScreenPicture;
-  Game.PicturePage := 0;
+  Game.Runtime.PicturePage := 0;
   SetVideoPage(1);
   LoadScreenPicture;
-  Game.PicturePage := 32768;
-  LoadResourceFile(Game.FontPointer, Game.FontFileName);
-  LoadResourceFile(Game.PictureBanks[12], Game.MoneyFileName);
+  Game.Runtime.PicturePage := 32768;
+  LoadResourceFile(Game.Runtime.FontPointer, Game.Runtime.FontFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[12], Game.Runtime.MoneyFileName);
 end;
 
 procedure LoadGameArtwork;
 begin
-  LoadResourceFile(Game.PictureBanks[0], Game.SubjectOneFileName);
-  LoadResourceFile(Game.PictureBanks[1], Game.SubjectTwoFileName);
-  LoadResourceFile(Game.PictureBanks[2], Game.BattlePictureFileName);
-  LoadResourceFile(Game.PictureBanks[3], Game.WaterPictureFileName);
-  LoadResourceFile(Game.PictureBanks[4], Game.IslandPictureFileName);
-  LoadResourceFile(Game.PictureBanks[5], Game.ChartPictureFileName);
-  LoadResourceFile(Game.PictureBanks[13], Game.EnemyPictureFileName);
-  CopyRecord(14, 0, 2880, Game.PictureBanks[0], Game.PictureBanks[14]);
-  Game.CalmArmyPicture := Game.PictureBanks[13];
+  LoadResourceFile(Game.Runtime.PictureBanks[0], Game.Runtime.SubjectOneFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[1], Game.Runtime.SubjectTwoFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[2], Game.Runtime.BattlePictureFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[3], Game.Runtime.WaterPictureFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[4], Game.Runtime.IslandPictureFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[5], Game.Runtime.ChartPictureFileName);
+  LoadResourceFile(Game.Runtime.PictureBanks[13], Game.Runtime.EnemyPictureFileName);
+  CopyRecord(14, 0, 2880, Game.Runtime.PictureBanks[0], Game.Runtime.PictureBanks[14]);
+  Game.Runtime.CalmArmyPicture := Game.Runtime.PictureBanks[13];
   asm
-    lea bx, Game.CalmArmyPicture
+    lea bx, Game.Runtime.CalmArmyPicture
     mov ax, [bx]
     add ax, 2880
     mov [bx], ax
@@ -72,9 +74,9 @@ var
 procedure ResetMenuPage;
 begin
   SetVideoPage(0);
-  Game.PictureFileName := 'TOWN.PIC';
+  Game.Runtime.PictureFileName := 'TOWN.PIC';
   LoadScreenPicture;
-  Game.PicturePage := 0;
+  Game.Runtime.PicturePage := 0;
 end;
 
 procedure DrawStartupMenu;
@@ -98,16 +100,16 @@ begin
   for I := 1 to 3 do DrawText(false, 60, I * 10 + 60, Difficulties[I]);
   repeat
     DrawText(true, 60, MenuChoice * 10 + 60, Difficulties[MenuChoice]);
-    Game.LastScan := ReadScanCode;
+    Game.Runtime.LastScan := ReadScanCode;
     DrawText(false, 60, MenuChoice * 10 + 60, Difficulties[MenuChoice]);
 
-    case Game.LastScan of
+    case Game.Runtime.LastScan of
       72: if MenuChoice > 0 then Dec(MenuChoice)
       else MenuChoice := 3;
       80: if MenuChoice < 3 then Inc(MenuChoice)
       else MenuChoice := 0;
     end;
-  until Game.LastScan = 28;
+  until Game.Runtime.LastScan = 28;
   ResetMenuPage;
   DrawText(false, 2, 8, 'Подождите пожалуйста, подготавливается новая игpа.');
   PrepareCampaign(MenuChoice);
@@ -186,22 +188,22 @@ begin
 
   repeat
     DrawText(true, 62, MenuChoice * 10 + 30, SaveFileNames[MenuChoice]);
-    Game.LastScan := ReadScanCode;
+    Game.Runtime.LastScan := ReadScanCode;
     DrawText(false, 62, MenuChoice * 10 + 30, SaveFileNames[MenuChoice]);
 
-    case Game.LastScan of
+    case Game.Runtime.LastScan of
       72: if MenuChoice > 0 then Dec(MenuChoice)
       else MenuChoice := SaveFileCount;
       80: if MenuChoice < SaveFileCount then Inc(MenuChoice)
       else MenuChoice := 0;
     end;
-  until Game.LastScan = 28;
+  until Game.Runtime.LastScan = 28;
   ResetMenuPage;
-  Game.DataFileName := SaveFileNames[MenuChoice] + '.KB2';
+  Game.Runtime.DataFileName := SaveFileNames[MenuChoice] + '.KB2';
   ReadCampaign;
-  Game.Heading := true;
-  Game.ShipHeading := 1;
-  Game.DataFileName := 'KB2.DAT';
+  Game.Campaign.Flags.Heading := true;
+  Game.Campaign.ShipHeading := 1;
+  Game.Runtime.DataFileName := 'KB2.DAT';
   WriteCampaign;
 Finished:
 end;
@@ -214,16 +216,16 @@ MenuAgain:
 
   repeat
     DrawText(true, 60, MenuChoice * 10 + 70, MainMenu[MenuChoice]);
-    Game.LastScan := ReadScanCode;
+    Game.Runtime.LastScan := ReadScanCode;
     DrawText(false, 60, MenuChoice * 10 + 70, MainMenu[MenuChoice]);
 
-    case Game.LastScan of
+    case Game.Runtime.LastScan of
       72: if MenuChoice > 0 then Dec(MenuChoice)
       else MenuChoice := 2;
       80: if MenuChoice < 2 then Inc(MenuChoice)
       else MenuChoice := 0;
     end;
-  until Game.LastScan = 28;
+  until Game.Runtime.LastScan = 28;
 
   case MenuChoice of
     0: NewGame;

@@ -6,7 +6,7 @@ interface
 uses KBTypes;
 
 type
-  TGameState = packed record
+  TRuntimeState = packed record
     DataFileName: string[12];
     Unknown_0C4B: array[1..1] of byte;
     MoneyFileName: string[9];
@@ -108,7 +108,9 @@ type
     ViewportLeftX, ViewportTopY: byte;
     Unknown_1AAA: array[1..2] of byte;
 
-    { Отсюда начинаются флаги сохранения. }
+  end;
+
+  TCampaignFlags = packed record
     Discovery: array[1..5, 0..65, 0..65] of boolean;
     LocalMapOwned: array[1..5] of boolean;
     Unknown_6FC5: array[1..1] of byte;
@@ -123,7 +125,10 @@ type
     InstructionsShown: boolean;
     Unknown_6FE1: array[1..1] of byte;
 
-    { Эта часть записывается в файл без упаковки. }
+  end;
+
+  TCampaignState = packed record
+    Flags: TCampaignFlags;
     VisitedCastles: array[0..25] of TContract;
     VisitedTowns: array[0..25] of TContract;
     Contracts: array[1..5, 1..5] of TContract;
@@ -200,7 +205,9 @@ type
     TornadoCharges: byte;
     ShipBackground: byte;
 
-    { Дальше идут рабочие переменные, они не сохраняются. }
+  end;
+
+  TWorldWorkState = packed record
     WizardPosition: TPosition;
     WizardAge: word;
     MagePosition: TPosition;
@@ -215,6 +222,12 @@ type
     SpellColorPool: array[0..7] of byte;
     GenerationIsland: byte;
     GenerationChoice: byte;
+  end;
+
+  TGameState = packed record
+    Runtime: TRuntimeState;
+    Campaign: TCampaignState;
+    World: TWorldWorkState;
   end;
 
 var

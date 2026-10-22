@@ -67,6 +67,21 @@ type
     Count: word
   end;
 
+type
+  PRoamingActor = ^TRoamingActor;
+  TRoamingActor = packed record
+    X, Y, Age: byte
+  end;
+
+  TReportSpecies = array[0..4] of byte;
+  TReportCounts = array[0..4] of word;
+  TTownVisitState = packed record
+    Caption: string[80];
+    LoadedTownArtwork: boolean;
+    Slot: byte;
+    JournalIndex: shortint;
+  end;
+
 implementation
 
 end.

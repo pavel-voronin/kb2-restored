@@ -1,28 +1,44 @@
-procedure NextPlayerUnit;
+unit KBPlayer;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+uses KBBType;
+
+procedure NextPlayerUnit(var Combat: TBattleState);
+function FindAdjacent(var X, Y: shortint; Base: byte): boolean;
+procedure ShootUnit(var Combat: TBattleState; var Shots: byte; Slot: byte);
+procedure MovePlayerUnit(var Combat: TBattleState; Slot: byte);
+
+implementation
+
+uses KBState, KBTables, Crt, KBBDmg, KBBDraw;
+
+procedure NextPlayerUnit(var Combat: TBattleState);
 var
   First: byte;
 
 begin
   if Combat.ReadyPlayerCount < Combat.PlayerCount then
   begin
-    if Game.CurrentBattleSlot > 3 then Game.CurrentBattleSlot := 0
-    else Inc(Game.CurrentBattleSlot);
-    First := Game.CurrentBattleSlot;
+    if Game.Runtime.CurrentBattleSlot > 3 then Game.Runtime.CurrentBattleSlot := 0
+    else Inc(Game.Runtime.CurrentBattleSlot);
+    First := Game.Runtime.CurrentBattleSlot;
 
-    while (Combat.Player[Game.CurrentBattleSlot].Species = 100) or
-      not Combat.CanMove[Game.CurrentBattleSlot] do
+    while (Combat.Player[Game.Runtime.CurrentBattleSlot].Species = 100) or
+      not Combat.CanMove[Game.Runtime.CurrentBattleSlot] do
     begin
-      if Game.CurrentBattleSlot > 3 then Game.CurrentBattleSlot := 0
-      else Inc(Game.CurrentBattleSlot);
+      if Game.Runtime.CurrentBattleSlot > 3 then Game.Runtime.CurrentBattleSlot := 0
+      else Inc(Game.Runtime.CurrentBattleSlot);
 
-      if First = Game.CurrentBattleSlot then
+      if First = Game.Runtime.CurrentBattleSlot then
       begin
         Combat.ReadyPlayerCount := Combat.PlayerCount;
         Exit;
       end;
     end;
 
-    FindUnitCell(Game.CurrentBattleSlot, 112, Combat.CursorX, Combat.CursorY);
+    FindUnitCell(Game.Runtime.CurrentBattleSlot, 112, Combat.CursorX, Combat.CursorY);
   end;
 end;
 
@@ -42,8 +58,8 @@ begin
 
       if ((DX <> 0) or (DY <> 0)) and
         (TX >= 0) and (TX <= 5) and (TY >= 0) and (TY <= 4) and
-        (Game.BattleField[TX, TY] > Base) and
-        (Game.BattleField[TX, TY] < Base + 14) then goto Found;
+        (Game.Runtime.BattleField[TX, TY] > Base) and
+        (Game.Runtime.BattleField[TX, TY] < Base + 14) then goto Found;
     end;
 
   FindAdjacent := false;
@@ -54,7 +70,7 @@ Found:
   FindAdjacent := true;
 end;
 
-procedure ShootUnit(var Shots: byte; Slot: byte);
+procedure ShootUnit(var Combat: TBattleState; var Shots: byte; Slot: byte);
 var
   X, Y: shortint;
 
@@ -67,8 +83,8 @@ begin
   Inc(Combat.ReadyPlayerCount);
 
   repeat
-    AwaitCellKey(X, Y, 12, 0);
-    case Game.LastScan of
+    AwaitCellKey(Combat, X, Y, 12, 0);
+    case Game.Runtime.LastScan of
       71: if (X > 0) and (Y > 0) then
       begin
         Dec(X);
@@ -97,23 +113,23 @@ begin
         Inc(Y)
       end;
 
-      28: if (Game.BattleField[X, Y] >= 32) and (Game.BattleField[X, Y] < 45) then
-        AttackUnit(Combat.CursorX, Combat.CursorY, X, Y)
+      28: if (Game.Runtime.BattleField[X, Y] >= 32) and (Game.Runtime.BattleField[X, Y] < 45) then
+        AttackUnit(Combat, Combat.CursorX, Combat.CursorY, X, Y)
       else
-        case Game.BattleField[X, Y] of
+        case Game.Runtime.BattleField[X, Y] of
           112, 115, 118, 121, 124: begin
-            Combat.TargetSlot := (Game.BattleField[X, Y] - 112) div 3;
+            Combat.TargetSlot := (Game.Runtime.BattleField[X, Y] - 112) div 3;
 
-            if Combat.Uncontrolled[Combat.TargetSlot] then AttackUnit(Combat.CursorX, Combat.CursorY, X, Y);
+            if Combat.Uncontrolled[Combat.TargetSlot] then AttackUnit(Combat, Combat.CursorX, Combat.CursorY, X, Y);
           end;
-        else Game.LastScan := 48;
+        else Game.Runtime.LastScan := 48;
         end;
     end;
-  until Game.LastScan = 28;
+  until Game.Runtime.LastScan = 28;
   Combat.CanMove[Slot] := false;
 end;
 
-procedure MovePlayerUnit(Slot: byte);
+procedure MovePlayerUnit(var Combat: TBattleState; Slot: byte);
 var
   Movement: byte;
 
@@ -122,15 +138,15 @@ begin
   Inc(Combat.ReadyPlayerCount);
 
   repeat
-    AwaitCellKey(Combat.CursorX, Combat.CursorY, 14, Movement);
+    AwaitCellKey(Combat, Combat.CursorX, Combat.CursorY, 14, Movement);
     Combat.Cell := Combat.CursorX;
     Combat.TargetY := Combat.CursorY;
 
-    case Game.LastScan of
+    case Game.Runtime.LastScan of
       31: if Combat.Player[Slot].Shots > 0 then
       begin
         Movement := Combat.ReadyPlayerCount;
-        ShootUnit(Combat.Player[Slot].Shots, Slot);
+        ShootUnit(Combat, Combat.Player[Slot].Shots, Slot);
         Combat.ReadyPlayerCount := Movement;
         Movement := 0;
       end;
@@ -164,22 +180,22 @@ begin
       end;
     end;
 
-    if Game.LastScan in [71..81] then
-      case Game.BattleField[Combat.Cell, Combat.TargetY] of
+    if Game.Runtime.LastScan in [71..81] then
+      case Game.Runtime.BattleField[Combat.Cell, Combat.TargetY] of
         0: begin
           RelocateUnit(Combat.CursorX, Combat.CursorY, Combat.Cell, Combat.TargetY);
           Dec(Movement);
         end;
 
         32..44: begin
-          AttackUnit(Combat.CursorX, Combat.CursorY, Combat.Cell, Combat.TargetY);
-          if Game.BattleDistances[Combat.Cell, Combat.TargetY] > 0 then
+          AttackUnit(Combat, Combat.CursorX, Combat.CursorY, Combat.Cell, Combat.TargetY);
+          if Game.Runtime.BattleDistances[Combat.Cell, Combat.TargetY] > 0 then
           begin
-            Combat.TargetSlot := (Game.BattleField[Combat.Cell, Combat.TargetY] - 32) div 3;
+            Combat.TargetSlot := (Game.Runtime.BattleField[Combat.Cell, Combat.TargetY] - 32) div 3;
 
             if Combat.Retaliations[Combat.TargetSlot] > 0 then
             begin
-              AttackUnit(Combat.Cell, Combat.TargetY, Combat.CursorX, Combat.CursorY);
+              AttackUnit(Combat, Combat.Cell, Combat.TargetY, Combat.CursorX, Combat.CursorY);
               Dec(Combat.Retaliations[Combat.TargetSlot]);
             end;
           end;
@@ -188,14 +204,14 @@ begin
         end;
 
         112, 115, 118, 121, 124: begin
-          Combat.TargetSlot := (Game.BattleField[Combat.Cell, Combat.TargetY] - 112) div 3;
+          Combat.TargetSlot := (Game.Runtime.BattleField[Combat.Cell, Combat.TargetY] - 112) div 3;
           if Combat.Uncontrolled[Combat.TargetSlot] then
           begin
-            AttackUnit(Combat.CursorX, Combat.CursorY, Combat.Cell, Combat.TargetY);
+            AttackUnit(Combat, Combat.CursorX, Combat.CursorY, Combat.Cell, Combat.TargetY);
 
-            if Game.BattleDistances[Combat.Cell, Combat.TargetY] > 0 then
+            if Game.Runtime.BattleDistances[Combat.Cell, Combat.TargetY] > 0 then
             begin
-              AttackUnit(Combat.Cell, Combat.TargetY, Combat.CursorX, Combat.CursorY);
+              AttackUnit(Combat, Combat.Cell, Combat.TargetY, Combat.CursorX, Combat.CursorY);
               Dec(Combat.Retaliations[Combat.TargetSlot]);
             end;
           end;
@@ -203,6 +219,8 @@ begin
           Movement := 0;
         end;
       end;
-  until (Game.LastScan in [1, 57]) or (Movement = 0);
+  until (Game.Runtime.LastScan in [1, 57]) or (Movement = 0);
   Combat.CanMove[Slot] := false;
 end;
+
+end.

@@ -36,16 +36,16 @@ var
   S: string[6];
 
 begin
-  if Game.ExtraDays > 0 then
+  if Game.Campaign.ExtraDays > 0 then
   begin
     DrawText(false, 64, 8, DaysCaption);
-    Str(Game.ExtraDays: 6, S);
+    Str(Game.Campaign.ExtraDays: 6, S);
     DrawText(false, 68, 8, S);
   end
   else
   begin
     DrawText(false, 64, 8, WeeksCaption);
-    Str(Game.Weeks: 3, S);
+    Str(Game.Campaign.Weeks: 3, S);
     DrawText(false, 71, 8, S);
   end;
 end;
@@ -121,7 +121,7 @@ begin
     24: DrawText(false, 17, 272, 'У Вас нет ни одного смеpча.');
   end;
 
-  Game.LastScan := ReadScanCode;
+  Game.Runtime.LastScan := ReadScanCode;
 end;
 
 procedure DrawArmyCaption(SelectPeer: boolean; Row: word; PeerCaption: string);
@@ -129,6 +129,5 @@ begin
   DrawText(SelectionHighlights[not SelectPeer], 5, Row, ArmyCaption);
   DrawText(SelectionHighlights[SelectPeer], 44, Row, PeerCaption);
 end;
-
 
 end.

@@ -14,7 +14,7 @@ var
   CueStep: integer;
 
 begin
-  if not Game.SoundDisabled then
+  if not Game.Runtime.SoundDisabled then
   begin
     case Cue of
       0: begin
@@ -102,7 +102,7 @@ begin
 
       1: for CueStep := 1 to 5 do
       begin
-           Sound(Game.CueFrequency);
+           Sound(Game.Runtime.CueFrequency);
            Delay(40);
            NoSound;
            Delay(10);
@@ -134,7 +134,7 @@ begin
          end;
 
       4: begin
-        Sound(Game.CueFrequency);
+        Sound(Game.Runtime.CueFrequency);
         Delay(100);
       end;
 
@@ -172,6 +172,4 @@ begin
   end;
 end;
 
-begin
-  Game.SoundDisabled := false;
 end.

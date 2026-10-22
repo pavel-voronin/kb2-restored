@@ -3,15 +3,18 @@ unit KBLpt;
 
 interface
 
+procedure InitializePrinter;
+
 implementation
 
 uses KBState;
 
+procedure InitializePrinter;
 begin
-  Assign(Game.Lst, 'LPT1');
-  Rewrite(Game.Lst);
+  Assign(Game.Runtime.Lst, 'LPT1');
+  Rewrite(Game.Runtime.Lst);
   asm
-    mov bx, word ptr Game.Lst
+    mov bx, word ptr Game.Runtime.Lst
     mov ax, $4400
     int $21
     or dl, $20
@@ -19,4 +22,6 @@ begin
     mov ax, $4401
     int $21
   end;
+end;
+
 end.

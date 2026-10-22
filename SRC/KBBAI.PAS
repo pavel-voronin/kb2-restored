@@ -1,4 +1,17 @@
-procedure EnemyPhase;
+unit KBBAI;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+uses KBBType;
+
+procedure EnemyPhase(var Combat: TBattleState);
+
+implementation
+
+uses KBState, KBTables, KBUI, KBGfx, KBInput, Crt, KBBDmg, KBBDraw, KBPlayer;
+
+procedure EnemyPhase(var Combat: TBattleState);
 label
   SameFound, AttackRun, NextEnemy;
 
@@ -55,7 +68,7 @@ begin
   if FindAdjacent(EnemyAI.BestX, EnemyAI.BestY, 111) then
   begin
     EnemyAI.StepRanks[2] := 0;
-    EnemyAI.PreferredTargets[0] := (Game.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
+    EnemyAI.PreferredTargets[0] := (Game.Runtime.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
   end
   else
     if EnemyAI.StepRanks[2] > 0 then
@@ -139,7 +152,7 @@ begin
       EnemyAI.Distance := Abs(EnemyAI.TargetX - X) + Abs(EnemyAI.TargetY - Y);
 
       if EnemyAI.Distance = 0 then EnemyAI.MovementCosts[X, Y] := Lo(EnemyAI.Distance)
-      else if Game.BattleField[X, Y] = 0 then EnemyAI.MovementCosts[X, Y] := Lo(EnemyAI.Distance)
+      else if Game.Runtime.BattleField[X, Y] = 0 then EnemyAI.MovementCosts[X, Y] := Lo(EnemyAI.Distance)
       else EnemyAI.MovementCosts[X, Y] := 255;
     end;
 end;
@@ -162,7 +175,7 @@ begin
 
         if (EnemyAI.BestX >= 0) and (EnemyAI.BestX <= 5) and
           (EnemyAI.BestY >= 0) and (EnemyAI.BestY <= 4) and
-          (Game.BattleField[EnemyAI.BestX, EnemyAI.BestY] = 0) then goto Found;
+          (Game.Runtime.BattleField[EnemyAI.BestX, EnemyAI.BestY] = 0) then goto Found;
       end;
 
     Inc(Radius);
@@ -190,10 +203,11 @@ begin
   HeaderPrompt(22);
   FindUnitCell(Slot, 32, EnemyAI.EnemyX, EnemyAI.EnemyY);
   HighlightCell(EnemyAI.EnemyX, EnemyAI.EnemyY);
-  Game.BattleTextColumn := ApplyDamage(Combat.Enemy[Slot].Species, Game.MagicPower * DamageFactor,
+  Game.Runtime.BattleTextColumn := ApplyDamage(Combat.Enemy[Slot].Species, Game.Campaign.MagicPower *
+    DamageFactor,
     Combat.Enemy[Slot].HitPoints);
 
-  if Game.BattleTextColumn > 0 then ReportEnemyLoss(Slot, EnemyAI.EnemyX, EnemyAI.EnemyY);
+  if Game.Runtime.BattleTextColumn > 0 then ReportEnemyLoss(Combat, Slot, EnemyAI.EnemyX, EnemyAI.EnemyY);
 end;
 
 procedure ChooseFlight;
@@ -234,9 +248,9 @@ Retry:
 
     if FindAdjacent(NearX, NearY, 111) then goto SeekEscape;
       HighlightCell(EnemyAI.EnemyX, EnemyAI.EnemyY);
-      AttackUnit(EnemyAI.EnemyX, EnemyAI.EnemyY, EnemyAI.TargetX, EnemyAI.TargetY);
+      AttackUnit(Combat, EnemyAI.EnemyX, EnemyAI.EnemyY, EnemyAI.TargetX, EnemyAI.TargetY);
       Dec(Combat.Enemy[EnemyAI.EnemySlot].Shots);
-      ShooterTurn := Game.BattleResult;
+      ShooterTurn := Game.Runtime.BattleResult;
       Exit;
 SeekEscape:
       Radius := EnemyAI.StepsLeft - 1;
@@ -251,11 +265,11 @@ SeekEscape:
             if FindAdjacent(TX, TY, 111) then
             begin
             end
-            else if Game.BattleField[TX, TY] = 0 then goto Escape;
+            else if Game.Runtime.BattleField[TX, TY] = 0 then goto Escape;
         end;
 
 NoEscape:
-      BuildCostMap((Game.BattleField[NearX, NearY] - 112) div 3);
+      BuildCostMap((Game.Runtime.BattleField[NearX, NearY] - 112) div 3);
       ShooterTurn := 3;
       Exit;
 Escape:
@@ -285,7 +299,7 @@ Escape:
           Dec(DY)
         end;
 
-        if Game.BattleField[NearX, NearY] = 0 then
+        if Game.Runtime.BattleField[NearX, NearY] = 0 then
         begin
           HighlightCell(EnemyAI.EnemyX, EnemyAI.EnemyY);
           RelocateUnit(EnemyAI.EnemyX, EnemyAI.EnemyY, NearX, NearY);
@@ -303,7 +317,7 @@ Escape:
 end;
 
 begin
-  while KeyPressed do Game.LastScan := ReadScanCode;
+  while KeyPressed do Game.Runtime.LastScan := ReadScanCode;
   FillChar(Combat.CanMove, 5, 1);
 
   for EnemyAI.ScanIndex := 0 to 4 do
@@ -319,8 +333,8 @@ begin
     if Combat.Enemy[EnemyAI.EnemySlot].Species >= 100 then goto NextEnemy;
     FillChar(EnemyAI.PreferredTargets, 3, 100);
     ClearRectangle(16, 8, 584, 15);
-    Game.TextBuffer := CreatureDefinitions[Combat.Enemy[EnemyAI.EnemySlot].Species].Name + MovingCaption;
-    DrawText(false, 2, 8, Game.TextBuffer);
+    Game.Runtime.TextBuffer := CreatureDefinitions[Combat.Enemy[EnemyAI.EnemySlot].Species].Name + MovingCaption;
+    DrawText(false, 2, 8, Game.Runtime.TextBuffer);
 
     if Combat.FrozenEnemySlot = EnemyAI.EnemySlot then
     begin
@@ -343,7 +357,7 @@ begin
         end;
       end;
 
-      if Game.BattleResult = 1 then Exit
+      if Game.Runtime.BattleResult = 1 then Exit
       else if Combat.Poison[EnemyAI.EnemySlot] = 0 then goto NextEnemy;
     end;
 
@@ -356,7 +370,8 @@ SameFound:
       if (Combat.Player[EnemyAI.ScanIndex].Species < 100) and (Combat.Player[EnemyAI.ScanIndex].Shots > 0) then
         if EnemyAI.PreferredTargets[1] < 5 then
         begin
-          if Combat.Player[EnemyAI.PreferredTargets[1]].AttackPower < Combat.Player[EnemyAI.ScanIndex].AttackPower then
+          if Combat.Player[EnemyAI.PreferredTargets[1]].AttackPower < Combat.Player[EnemyAI.ScanIndex].AttackPower
+    then
             EnemyAI.PreferredTargets[1] := EnemyAI.ScanIndex;
         end
         else EnemyAI.PreferredTargets[1] := EnemyAI.ScanIndex;
@@ -411,7 +426,7 @@ SameFound:
 
       if FindAdjacent(EnemyAI.BestX, EnemyAI.BestY, 111) then
       begin
-        EnemyAI.TurnResult := (Game.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
+        EnemyAI.TurnResult := (Game.Runtime.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
         BuildCostMap(EnemyAI.TurnResult);
         goto AttackRun;
       end;
@@ -432,16 +447,16 @@ AttackRun:
 
       if ChooseStep(true, EnemyAI.EnemyX, EnemyAI.EnemyY) then
       begin
-        AttackUnit(EnemyAI.EnemyX, EnemyAI.EnemyY, EnemyAI.BestX, EnemyAI.BestY);
+        AttackUnit(Combat, EnemyAI.EnemyX, EnemyAI.EnemyY, EnemyAI.BestX, EnemyAI.BestY);
 
-        if Game.BattleResult = 2 then Exit;
-        if Game.BattleDistances[EnemyAI.BestX, EnemyAI.BestY] > 0 then
+        if Game.Runtime.BattleResult = 2 then Exit;
+        if Game.Runtime.BattleDistances[EnemyAI.BestX, EnemyAI.BestY] > 0 then
         begin
-          Combat.TargetSlot := (Game.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
+          Combat.TargetSlot := (Game.Runtime.BattleField[EnemyAI.BestX, EnemyAI.BestY] - 112) div 3;
 
           if Combat.Retaliations[Combat.TargetSlot] > 0 then
           begin
-            AttackUnit(EnemyAI.BestX, EnemyAI.BestY, EnemyAI.EnemyX, EnemyAI.EnemyY);
+            AttackUnit(Combat, EnemyAI.BestX, EnemyAI.BestY, EnemyAI.EnemyX, EnemyAI.EnemyY);
             Dec(Combat.Retaliations[Combat.TargetSlot]);
           end;
         end;
@@ -467,3 +482,5 @@ NextEnemy:
   Combat.EnemyPhaseFinished := true;
   Combat.RoundMagicReady := true;
 end;
+
+end.

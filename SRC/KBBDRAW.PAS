@@ -1,12 +1,29 @@
+unit KBBDraw;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+uses KBBType;
+
+procedure DrawCellCount(X, Y: byte);
+procedure PulseCell(X, Y, Color: byte);
+procedure HighlightCell(X, Y: byte);
+procedure FindUnitCell(Side, Slot: byte; var X, Y: byte);
+procedure AwaitCellKey(var Combat: TBattleState; X, Y, Color, Movement: byte);
+
+implementation
+
+uses KBState, KBTables, KBUI, KBGfx, KBInput, Crt;
+
 procedure DrawCellCount(X, Y: byte);
 begin
-  if Game.BattleDistances[X, Y] > 0 then
+  if Game.Runtime.BattleDistances[X, Y] > 0 then
   begin
-    Str(Game.BattleDistances[X, Y], Game.TextBuffer);
-    Game.BattleTextColumn := Length(Game.TextBuffer);
-    Game.BattleTextColumn := 5 - Game.BattleTextColumn + 8 + X * 12;
-    Game.GenerationLimit := Y * 60 + 74;
-    DrawText(false, Lo(Game.BattleTextColumn), Game.GenerationLimit, Game.TextBuffer);
+    Str(Game.Runtime.BattleDistances[X, Y], Game.Runtime.TextBuffer);
+    Game.Runtime.BattleTextColumn := Length(Game.Runtime.TextBuffer);
+    Game.Runtime.BattleTextColumn := 5 - Game.Runtime.BattleTextColumn + 8 + X * 12;
+    Game.World.GenerationLimit := Y * 60 + 74;
+    DrawText(false, Lo(Game.Runtime.BattleTextColumn), Game.World.GenerationLimit, Game.Runtime.TextBuffer);
   end;
 end;
 
@@ -63,7 +80,7 @@ var
 
 begin
   for I := 1 to 2 do PulseCell(X, Y, 5);
-  DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.BattleField[X, Y]);
+  DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.Runtime.BattleField[X, Y]);
   DrawCellCount(X, Y);
 end;
 
@@ -75,7 +92,7 @@ begin
 
   repeat
     repeat
-      if Game.BattleField[X, Y] = Side then Exit
+      if Game.Runtime.BattleField[X, Y] = Side then Exit
       else Inc(Y);
     until Y > 4;
     Inc(X);
@@ -83,7 +100,7 @@ begin
   until false;
 end;
 
-procedure AwaitCellKey(X, Y, Color, Movement: byte);
+procedure AwaitCellKey(var Combat: TBattleState; X, Y, Color, Movement: byte);
 
 const
   MovementCaption = '  '#132#162#168#166#165#173#168#165'(M):';
@@ -100,9 +117,9 @@ var
 begin
   if Color < 15 then
   begin
-    if Game.BattleField[X, Y] > 111 then
+    if Game.Runtime.BattleField[X, Y] > 111 then
     begin
-      Slot := (Game.BattleField[X, Y] - 112) div 3;
+      Slot := (Game.Runtime.BattleField[X, Y] - 112) div 3;
       ClearRectangle(16, 8, 607, 15);
 
       if Combat.CanMove[Slot] then
@@ -133,14 +150,16 @@ begin
     PulseCell(X, Y, Color)
   until BIOSKeyPressed;
 
-  case Game.BattleField[X, Y] of
-    0, 48, 64, 80: DrawPictureTile(BattleCellOffsets[X + Y * 6], Game.BattleField[X, Y]);
+  case Game.Runtime.BattleField[X, Y] of
+    0, 48, 64, 80: DrawPictureTile(BattleCellOffsets[X + Y * 6], Game.Runtime.BattleField[X, Y]);
   else
   begin
-    DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.BattleField[X, Y]);
+    DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.Runtime.BattleField[X, Y]);
     DrawCellCount(X, Y);
   end;
   end;
 
-  Game.LastScan := ReadScanCode;
+  Game.Runtime.LastScan := ReadScanCode;
 end;
+
+end.

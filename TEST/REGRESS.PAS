@@ -2,7 +2,7 @@ program Regression;
 {$G+,R-,S-,I+,A+}
 {$M 16384,0,655360}
 
-uses KBRandom, Crt, KBTypes, KBState, KBTables, KBWorld, KBAdvent, KBStart, KBSave;
+uses KBGen, KBRandom, Crt, KBTypes, KBState, KBTables, KBWorld, KBAdvent, KBStart, KBSave;
 
 procedure RunRegression;
 const
@@ -21,6 +21,10 @@ var
 begin
   Assign(TestLog, 'REGRESS.LOG');
   Rewrite(TestLog);
+{$IFDEF STRUCTURED}
+  if (SizeOf(TCampaignFlags) <> 21814) or
+     (SizeOf(TCampaignState) <> 46816) or (LegacySaveBytes <> 27729) then Halt(6);
+{$ENDIF}
   InitializeRuntime;
   for Level := 0 to 3 do
   begin
@@ -30,13 +34,13 @@ begin
     PlaceInitialHero(Level);
     PrepareSave;
     Str(Level, Name);
-    Game.DataFileName := 'L' + Name + '.DAT';
+    Game.Runtime.DataFileName := 'L' + Name + '.DAT';
     WriteCampaign;
-    OriginalGold := Game.Gold;
-    Game.Gold := -1;
+    OriginalGold := Game.Campaign.Gold;
+    Game.Campaign.Gold := -1;
     ReadCampaign;
-    if Game.Gold <> OriginalGold then Halt(1);
-    Game.DataFileName := 'R' + Name + '.DAT';
+    if Game.Campaign.Gold <> OriginalGold then Halt(1);
+    Game.Runtime.DataFileName := 'R' + Name + '.DAT';
     WriteCampaign;
     Assign(SourceFile, 'L' + Name + '.DAT');
     Assign(CopyFile, 'R' + Name + '.DAT');

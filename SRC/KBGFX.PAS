@@ -3,8 +3,6 @@ unit KBGfx;
 
 interface
 
-uses KBState;
-
 procedure SetVideoPage(Page: byte);
 
 procedure LoadScreenPicture;
@@ -23,10 +21,6 @@ procedure DrawMaskedTile(Destination: word; Foreground, Background: byte);
 
 procedure MirrorTileArt(Picture: byte);
 
-procedure AdvanceNearbyRoamers;
-
-procedure RevealNearbyTiles;
-
 procedure ClearPicturePlanes(Destination: word; Mask: byte);
 
 procedure DrawPicturePlanes(Destination: word; Picture, Mask: byte);
@@ -36,6 +30,8 @@ procedure StoreMutantFrames(Packet, Picture: byte);
 procedure DrawLine(X1, Y1, X2, Y2: word; Color: byte);
 
 implementation
+
+uses KBState;
 
 procedure SetVideoPage(Page: byte);
 begin
@@ -54,7 +50,7 @@ asm
   mov ax, $a000
   mov es, ax
   xor cx, cx
-  lea bx, Game.PictureFileName
+  lea bx, Game.Runtime.PictureFileName
   mov dx, bx
   mov al, byte ptr [bx]
   xor ah, ah
@@ -66,8 +62,8 @@ asm
   mov ax, $3d00
   int $21
   mov bx, ax
-  mov di, word ptr Game.PicturePage
-  lea si, Game.PictureBanks
+  mov di, word ptr Game.Runtime.PicturePage
+  lea si, Game.Runtime.PictureBanks
   add si, $10
   mov dx, word ptr [si]
   mov ax, word ptr [si + 2]
@@ -147,7 +143,7 @@ begin
     xor dh, dh
     mov di, dx
     add di, ax
-    add di, word ptr Game.PicturePage
+    add di, word ptr Game.Runtime.PicturePage
     mov cl, byte ptr ss:[bx]
     xor ch, ch
     mov dx, $3c4
@@ -161,7 +157,7 @@ begin
     shl ax, 1
     shl ax, 1
     shl ax, 1
-    lea si, Game.Font
+    lea si, Game.Runtime.Font
     add si, ax
     movsb
     push di
@@ -227,7 +223,7 @@ begin
     dec cl
     shr di, cl
     add di, ax
-    add di, word ptr Game.PicturePage
+    add di, word ptr Game.Runtime.PicturePage
     mov bx, word ptr [bp + 6]
     sub bx, word ptr [bp + $a]
     inc bx
@@ -256,7 +252,7 @@ begin
     mov es, ax
     lea bx, [bp + 8]
     mov di, word ptr ss:[bx]
-    add di, word ptr Game.PicturePage
+    add di, word ptr Game.Runtime.PicturePage
     mov ax, $b40
     mov cl, 4
     lea bx, [bp + 6]
@@ -270,7 +266,7 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov si, word ptr [bx]
     add si, ax
@@ -319,15 +315,15 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov di, word ptr [bx]
     add di, ax
-    mov word ptr Game.BlitOverlayOffset, di
+    mov word ptr Game.Runtime.BlitOverlayOffset, di
     inc bx
     inc bx
     mov ax, word ptr [bx]
-    mov word ptr Game.BlitOverlaySegment, ax
+    mov word ptr Game.Runtime.BlitOverlaySegment, ax
     mov ax, $b40
     mov cl, 4
     lea bx, [bp + 6]
@@ -341,31 +337,31 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov si, word ptr [bx]
     add si, ax
-    mov word ptr Game.BlitSourceOffset, si
+    mov word ptr Game.Runtime.BlitSourceOffset, si
     inc bx
     inc bx
     mov ax, word ptr [bx]
-    mov word ptr Game.BlitSourceSegment, ax
+    mov word ptr Game.Runtime.BlitSourceSegment, ax
     mov bx, si
     mov ax, $a000
-    mov word ptr Game.BlitDestSegment, ax
+    mov word ptr Game.Runtime.BlitDestSegment, ax
     lea bp, [bp + $a]
     mov bp, word ptr [bp]
-    mov word ptr Game.BlitDestOffset, bp
-    lea di, Game.PictureMask
+    mov word ptr Game.Runtime.BlitDestOffset, bp
+    lea di, Game.Runtime.PictureMask
     mov bx, di
-    mov si, word ptr Game.BlitSourceOffset
+    mov si, word ptr Game.Runtime.BlitSourceOffset
     mov ax, ds
     mov es, ax
     mov cx, $168
     xor ax, ax
     rep stosw
     mov di, bx
-    mov ds, word ptr Game.BlitSourceSegment
+    mov ds, word ptr Game.Runtime.BlitSourceSegment
     mov bl, 4
     mov bp, 0
     mov dx, $ffff
@@ -400,10 +396,10 @@ begin
     jne @TileMaskPlane
     mov ax, es
     mov ds, ax
-    mov bp, word ptr Game.BlitDestOffset
-    mov bx, word ptr Game.BlitSourceOffset
-    mov di, word ptr Game.BlitOverlayOffset
-    lea si, Game.PictureMask
+    mov bp, word ptr Game.Runtime.BlitDestOffset
+    mov bx, word ptr Game.Runtime.BlitSourceOffset
+    mov di, word ptr Game.Runtime.BlitOverlayOffset
+    lea si, Game.Runtime.PictureMask
     mov ah, 8
 
   @TilePlane:
@@ -416,19 +412,19 @@ begin
 
   @TileScanline:
     push ax
-    mov byte ptr Game.BlitWordsLeft, 6
+    mov byte ptr Game.Runtime.BlitWordsLeft, 6
 
   @TileWord:
     lodsw
-    mov es, word ptr Game.BlitSourceSegment
+    mov es, word ptr Game.Runtime.BlitSourceSegment
     mov cx, word ptr es:[bx]
     and cx, ax
     not ax
-    mov es, word ptr Game.BlitOverlaySegment
+    mov es, word ptr Game.Runtime.BlitOverlaySegment
     mov dx, word ptr es:[di]
     and dx, ax
     or dx, cx
-    mov es, word ptr Game.BlitDestSegment
+    mov es, word ptr Game.Runtime.BlitDestSegment
     mov word ptr es:[bp], dx
     inc bx
     inc bx
@@ -436,7 +432,7 @@ begin
     inc di
     inc bp
     inc bp
-    dec byte ptr Game.BlitWordsLeft
+    dec byte ptr Game.Runtime.BlitWordsLeft
     jne @TileWord
     add bp, $44
     pop ax
@@ -467,37 +463,37 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov di, word ptr [bx]
     add di, ax
-    mov word ptr Game.BlitOverlayOffset, di
+    mov word ptr Game.Runtime.BlitOverlayOffset, di
     inc bx
     inc bx
     mov ax, word ptr [bx]
-    mov word ptr Game.BlitOverlaySegment, ax
-    les bx, dword ptr Game.PictureBanks[14*4]
-    mov word ptr Game.BlitSourceOffset, bx
+    mov word ptr Game.Runtime.BlitOverlaySegment, ax
+    les bx, dword ptr Game.Runtime.PictureBanks[14*4]
+    mov word ptr Game.Runtime.BlitSourceOffset, bx
     mov ax, es
-    mov word ptr Game.BlitSourceSegment, ax
-    lea bx, Game.PictureBanks
+    mov word ptr Game.Runtime.BlitSourceSegment, ax
+    lea bx, Game.Runtime.PictureBanks
     mov ax, word ptr [bx]
     add ax, $9d80
-    mov word ptr Game.BlitDestOffset, ax
+    mov word ptr Game.Runtime.BlitDestOffset, ax
     inc bx
     inc bx
     mov ax, word ptr [bx]
-    mov word ptr Game.BlitDestSegment, ax
-    lea di, Game.PictureMask
+    mov word ptr Game.Runtime.BlitDestSegment, ax
+    lea di, Game.Runtime.PictureMask
     mov bx, di
-    mov si, word ptr Game.BlitSourceOffset
+    mov si, word ptr Game.Runtime.BlitSourceOffset
     mov ax, ds
     mov es, ax
     mov cx, $168
     xor ax, ax
     rep stosw
     mov di, bx
-    mov ds, word ptr Game.BlitSourceSegment
+    mov ds, word ptr Game.Runtime.BlitSourceSegment
     mov bl, 4
     mov bp, 0
     mov dx, $ffff
@@ -532,10 +528,10 @@ begin
     jne @ComposeMaskPlane
     mov ax, es
     mov ds, ax
-    mov di, word ptr Game.BlitDestOffset
-    mov bx, word ptr Game.BlitSourceOffset
-    mov bp, word ptr Game.BlitOverlayOffset
-    lea si, Game.PictureMask
+    mov di, word ptr Game.Runtime.BlitDestOffset
+    mov bx, word ptr Game.Runtime.BlitSourceOffset
+    mov bp, word ptr Game.Runtime.BlitOverlayOffset
+    lea si, Game.Runtime.PictureMask
     mov ah, 4
 
   @ComposePlane:
@@ -544,25 +540,25 @@ begin
 
   @ComposeScanline:
     push ax
-    mov byte ptr Game.BlitWordsLeft, 6
+    mov byte ptr Game.Runtime.BlitWordsLeft, 6
 
   @ComposeWord:
     lodsw
-    mov es, word ptr Game.BlitSourceSegment
+    mov es, word ptr Game.Runtime.BlitSourceSegment
     mov cx, word ptr es:[bx]
     and cx, ax
     not ax
-    mov es, word ptr Game.BlitOverlaySegment
+    mov es, word ptr Game.Runtime.BlitOverlaySegment
     mov dx, word ptr es:[bp]
     and ax, dx
     or ax, cx
-    mov es, word ptr Game.BlitDestSegment
+    mov es, word ptr Game.Runtime.BlitDestSegment
     stosw
     inc bx
     inc bx
     inc bp
     inc bp
-    dec byte ptr Game.BlitWordsLeft
+    dec byte ptr Game.Runtime.BlitWordsLeft
     jne @ComposeWord
     pop ax
     dec al
@@ -590,28 +586,28 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov si, word ptr [bx]
     add si, ax
-    mov word ptr Game.BlitSourceOffset, si
+    mov word ptr Game.Runtime.BlitSourceOffset, si
     inc bx
     inc bx
     mov ax, word ptr [bx]
-    mov word ptr Game.BlitSourceSegment, ax
+    mov word ptr Game.Runtime.BlitSourceSegment, ax
     lea bx, [bp + $a]
     mov ax, word ptr ss:[bx]
-    mov word ptr Game.BlitDestOffset, ax
-    lea di, Game.PictureMask
+    mov word ptr Game.Runtime.BlitDestOffset, ax
+    lea di, Game.Runtime.PictureMask
     mov bx, di
-    mov si, word ptr Game.BlitSourceOffset
+    mov si, word ptr Game.Runtime.BlitSourceOffset
     mov ax, ds
     mov es, ax
     mov cx, $168
     xor ax, ax
     rep stosw
     mov di, bx
-    mov ds, word ptr Game.BlitSourceSegment
+    mov ds, word ptr Game.Runtime.BlitSourceSegment
     mov bl, 4
     mov dx, 0
 
@@ -676,8 +672,8 @@ begin
     mov ds, ax
     mov ax, $a000
     mov es, ax
-    mov di, word ptr Game.BlitDestOffset
-    lea si, Game.PictureMask
+    mov di, word ptr Game.Runtime.BlitDestOffset
+    lea si, Game.Runtime.PictureMask
     mov bl, $3c
 
   @LandscapeScanline:
@@ -711,7 +707,7 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov di, word ptr [bx]
     add di, ax
@@ -719,7 +715,7 @@ begin
     inc bx
     mov ax, word ptr [bx]
     mov es, ax
-    lea si, Game.PictureMask
+    lea si, Game.Runtime.PictureMask
     mov dh, 4
     mov bx, $c
     mov ah, $80
@@ -766,295 +762,6 @@ begin
   end;
 end;
 
-procedure LocateViewportBuffer; assembler;
-asm
-  mov ax, ds
-  mov es, ax
-  mov al, byte ptr Game.Island
-  dec al
-  xor ah, ah
-  mov dx, $1104
-  mul dx
-  add di, ax
-  mov word ptr Game.IslandBufferOffset, di
-  lea bx, Game.Hero
-  mov al, byte ptr [bx]
-  dec al
-  dec al
-  mov byte ptr Game.ViewportLeftX, al
-  mov cl, $42
-  mul cl
-  add di, ax
-  inc bx
-  mov al, byte ptr [bx]
-  dec al
-  dec al
-  mov byte ptr Game.ViewportTopY, al
-  xor ah, ah
-  add di, ax
-  mov word ptr Game.ViewportBufferOffset, di
-end;
-
-procedure AdvanceNearbyRoamers; assembler;
-asm
-  push bp
-  xor al, al
-  cmp byte ptr Game.WorldMapRedraw, al
-  je @BeginRoamerScan
-  dec byte ptr Game.WorldMapRedraw
-
-@BeginRoamerScan:
-  inc al
-  mov byte ptr Game.WorldMapPending, al
-  lea di, Game.Map
-  call LocateViewportBuffer
-  mov al, 5
-  mov cl, 5
-  mov ch, $1c
-
-@RoamerColumn:
-  mov ah, 5
-
-@RoamerCell:
-  cmp byte ptr [di], cl
-  je @CheckEnemyGrace
-  cmp byte ptr [di], ch
-  je @ChooseRoamerDestination
-  inc di
-  dec ah
-  jne @RoamerCell
-
-@NextRoamerColumn:
-  add di, $3d
-  dec al
-  jne @RoamerColumn
-  jmp @FinalizeRoamerMarkers
-
-@CheckEnemyGrace:
-  cmp byte ptr Game.EnemyGrace, 0
-  je @ChooseRoamerDestination
-  dec byte ptr Game.EnemyGrace
-  inc di
-  dec ah
-  or ah, ah
-  jne @RoamerCell
-  jmp @NextRoamerColumn
-
-@ChooseRoamerDestination:
-  inc di
-  mov si, $505
-  mov bp, ax
-  sub si, ax
-  mov ax, si
-  mov byte ptr Game.StepX, al
-  mov byte ptr Game.StepY, ah
-  mov dx, ax
-  xor bx, bx
-  inc bl
-  inc bl
-  inc bh
-  add dl, byte ptr Game.ViewportLeftX
-  add dh, byte ptr Game.ViewportTopY
-  sub dl, byte ptr Game.GenerationX
-  jge @AbsoluteHeroDistanceX
-  neg dl
-
-@AbsoluteHeroDistanceX:
-  cmp dl, bh
-  ja @ChooseWindowStep
-  sub dh, byte ptr Game.GenerationY
-  jge @AbsoluteHeroDistanceY
-  neg dh
-
-@AbsoluteHeroDistanceY:
-  cmp dh, bh
-  ja @ChooseWindowStep
-  mov bx, word ptr Game.IslandBufferOffset
-  mov al, byte ptr Game.GenerationX
-  mov ah, $42
-  mul ah
-  add bx, ax
-  mov al, byte ptr Game.GenerationY
-  xor ah, ah
-  add bx, ax
-  jmp @TestRoamerDestination
-
-@ChooseWindowStep:
-  cmp al, bl
-  jb @StepEastSide
-  je @StepVertical
-  cmp ah, bl
-  jb @StepSouthWest
-  ja @StepNorthWest
-  mov dx, $ffbd
-  jmp @OffsetDestination
-
-@StepSouthWest:
-  mov dx, $ffbe
-  jmp @OffsetDestination
-
-@StepNorthWest:
-  mov dx, $ffbc
-  jmp @OffsetDestination
-
-@StepEastSide:
-  cmp ah, bl
-  jb @StepSouthEast
-  ja @StepNorthEast
-  mov dx, $41
-  jmp @OffsetDestination
-
-@StepSouthEast:
-  mov dx, $42
-  jmp @OffsetDestination
-
-@StepNorthEast:
-  mov dx, $40
-  jmp @OffsetDestination
-
-@StepVertical:
-  cmp ah, bl
-  jb @StepSouth
-  mov dx, $fffe
-  jmp @OffsetDestination
-
-@StepSouth:
-  xor dx, dx
-
-@OffsetDestination:
-  mov bx, di
-  add bx, dx
-
-@TestRoamerDestination:
-  cmp byte ptr [bx], 0
-  je @MarkRoamerDestination
-  cmp byte ptr [bx], 9
-  je @MarkRoamerDestination
-  cmp byte ptr [bx], $a
-  je @MarkRoamerDestination
-  mov ax, bp
-  dec ah
-  or ah, ah
-  jne @ContinueRoamerScan
-  jmp @NextRoamerColumn
-
-@ContinueRoamerScan:
-  jmp @RoamerCell
-
-@MarkRoamerDestination:
-  mov ax, bx
-  sub ax, word ptr Game.IslandBufferOffset
-  mov dl, $42
-  div dl
-  mov byte ptr Game.RoamerNextX, al
-  mov byte ptr Game.RoamerNextY, ah
-  mov si, di
-  dec si
-  cmp byte ptr [si], 5
-  je @MarkArmyDestination
-  mov byte ptr Game.WorldMapPending, 0
-  mov byte ptr [bx], $fe
-  mov byte ptr [si], 0
-  lea bx, Game.MagePosition
-  inc bx
-  jmp @UpdateRoamerPosition
-
-@MarkArmyDestination:
-  mov byte ptr [bx], $ff
-  mov byte ptr [si], 0
-  mov al, byte ptr Game.Island
-  dec al
-  xor ah, ah
-  mov dx, $165
-  mul dx
-  lea bx, Game.WanderingArmies
-  add bx, ax
-  mov dx, $11
-  mov al, byte ptr Game.ViewportLeftX
-  add al, byte ptr Game.StepX
-  mov ah, byte ptr Game.ViewportTopY
-  add ah, byte ptr Game.StepY
-
-@FindArmyX:
-  cmp byte ptr [bx], al
-  je @FindArmyY
-  add bx, dx
-  jmp @FindArmyX
-
-@FindArmyY:
-  inc bx
-  cmp byte ptr [bx], ah
-  je @UpdateRoamerPosition
-  add bx, dx
-  dec bx
-  jmp @FindArmyX
-
-@UpdateRoamerPosition:
-  mov ax, bp
-  dec ah
-  dec bx
-  mov dl, byte ptr Game.RoamerNextX
-  mov dh, byte ptr Game.RoamerNextY
-  mov word ptr [bx], dx
-  or ah, ah
-  jne @ContinueMovedRoamerScan
-  jmp @NextRoamerColumn
-
-@ContinueMovedRoamerScan:
-  jmp @RoamerCell
-
-@FinalizeRoamerMarkers:
-  mov bx, word ptr Game.ViewportBufferOffset
-  mov al, 5
-  mov cl, $ff
-  mov ch, $fe
-
-@MarkerColumn:
-  mov ah, 5
-
-@MarkerCell:
-  cmp byte ptr [bx], cl
-  je @RestoreArmyMarker
-  cmp byte ptr [bx], ch
-  je @RestoreMageMarker
-
-@NextMarkerCell:
-  inc bx
-  dec ah
-  jne @MarkerCell
-  add bx, $3d
-  dec al
-  jne @MarkerColumn
-  jmp @WorldMapDone
-
-@RestoreArmyMarker:
-  mov byte ptr [bx], 5
-  jmp @NextMarkerCell
-
-@RestoreMageMarker:
-  mov byte ptr [bx], $1c
-  jmp @NextMarkerCell
-
-@WorldMapDone:
-  pop bp
-end;
-
-procedure RevealNearbyTiles; assembler;
-asm
-  lea di, Game.Discovery
-  call LocateViewportBuffer
-  xor al, al
-  inc al
-  mov ah, 5
-
-@RevealColumn:
-  mov cx, 5
-  rep stosb
-  add di, $3d
-  dec ah
-  jne @RevealColumn
-end;
-
 procedure ClearPicturePlanes(Destination: word; Mask: byte);
 begin
   asm
@@ -1062,7 +769,7 @@ begin
     mov es, ax
     lea bx, [bp + 8]
     mov di, word ptr ss:[bx]
-    add di, word ptr Game.PicturePage
+    add di, word ptr Game.Runtime.PicturePage
     lea bx, [bp + 6]
     mov bh, byte ptr ss:[bx]
     mov ax, $802
@@ -1101,7 +808,7 @@ begin
     mov es, ax
     lea bx, [bp + $a]
     mov di, word ptr ss:[bx]
-    add di, word ptr Game.PicturePage
+    add di, word ptr Game.Runtime.PicturePage
     mov ax, $b40
     mov cl, 4
     lea bx, [bp + 8]
@@ -1115,7 +822,7 @@ begin
     shl cl, 1
     shl cl, 1
     xor ch, ch
-    lea bx, Game.PictureBanks
+    lea bx, Game.Runtime.PictureBanks
     add bx, cx
     mov si, word ptr [bx]
     add si, ax
@@ -1162,7 +869,7 @@ procedure StoreMutantFrames(Packet, Picture: byte);
 begin
   asm
     push ds
-    les di, dword ptr Game.PictureBanks[10*4]
+    les di, dword ptr Game.Runtime.PictureBanks[10*4]
     mov al, byte ptr [bp + 6]
     xor ah, ah
     mov dx, $b40
@@ -1174,7 +881,7 @@ begin
     mov cx, $168
     xor ax, ax
     rep stosw
-    lea dx, Game.ReservePictureFileName
+    lea dx, Game.Runtime.ReservePictureFileName
     mov bx, dx
     inc dx
     mov al, byte ptr [bx]
@@ -1242,7 +949,7 @@ begin
     shr bx, 1
     shr bx, 1
     shr bx, 1
-    add bx, word ptr Game.PicturePage
+    add bx, word ptr Game.Runtime.PicturePage
     add bx, ax
     and cl, 7
     xor cl, 7

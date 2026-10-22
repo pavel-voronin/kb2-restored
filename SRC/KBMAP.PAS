@@ -1,3 +1,14 @@
+unit KBMap;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+procedure MapVisit(Island: byte);
+
+implementation
+
+uses KBReport, KBTables, KBUI, KBGfx, KBInput, Crt, KBState;
+
 procedure MapVisit(Island: byte);
 label
   Render;
@@ -96,35 +107,35 @@ var
   K: word;
 
 begin
-  {$I-} Write(Game.Lst,#7); {$I+}
+  {$I-} Write(Game.Runtime.Lst,#7); {$I+}
   if IOResult = 0 then
   begin
-    Write(Game.Lst, #14);
+    Write(Game.Runtime.Lst, #14);
 
     case Island of
-      1: WriteLn(Game.Lst, Name1);
-      2: WriteLn(Game.Lst, Name2);
-      3: WriteLn(Game.Lst, Name3);
-      4: WriteLn(Game.Lst, Name4);
-      5: WriteLn(Game.Lst, Name5);
+      1: WriteLn(Game.Runtime.Lst, Name1);
+      2: WriteLn(Game.Runtime.Lst, Name2);
+      3: WriteLn(Game.Runtime.Lst, Name3);
+      4: WriteLn(Game.Runtime.Lst, Name4);
+      5: WriteLn(Game.Runtime.Lst, Name5);
     end;
 
-    WriteLn(Game.Lst);
-    Write(Game.Lst, #27, 'A', #8);
-    Write(Game.Lst, #27, 'K', #194, #1);
+    WriteLn(Game.Runtime.Lst);
+    Write(Game.Runtime.Lst, #27, 'A', #8);
+    Write(Game.Runtime.Lst, #27, 'K', #194, #1);
 
-    for K := 1 to 450 do Write(Game.Lst, #1);
-    WriteLn(Game.Lst);
+    for K := 1 to 450 do Write(Game.Runtime.Lst, #1);
+    WriteLn(Game.Runtime.Lst);
     for Y := 5 to 60 do
     begin
-      Write(Game.Lst, #27, 'K', #194, #1, #255);
+      Write(Game.Runtime.Lst, #27, 'K', #194, #1, #255);
 
       for X := 5 to 60 do
       begin
         Kind := 8;
 
-        if Game.Discovery[Island, X, Y] or Game.LocalMapOwned[Island] then
-          case Game.Map[Island, X, Y] of
+        if Game.Campaign.Flags.Discovery[Island, X, Y] or Game.Campaign.Flags.LocalMapOwned[Island] then
+          case Game.Campaign.Map[Island, X, Y] of
             0, 32..47: Kind := 1;
             12, 28: Kind := 1;
             14, 4, 48..63: Kind := 3;
@@ -138,15 +149,15 @@ begin
           else Kind := 7;
           end;
 
-        for I := 0 to 7 do Write(Game.Lst, Chr(PrinterColumnPatterns[Kind, I]));
+        for I := 0 to 7 do Write(Game.Runtime.Lst, Chr(PrinterColumnPatterns[Kind, I]));
       end;
 
-      WriteLn(Game.Lst, #255);
+      WriteLn(Game.Runtime.Lst, #255);
     end;
 
-    Write(Game.Lst, #27, 'K', #194, #1);
-    for K := 1 to 450 do Write(Game.Lst, #128);
-    WriteLn(Game.Lst);
+    Write(Game.Runtime.Lst, #27, 'K', #194, #1);
+    for K := 1 to 450 do Write(Game.Runtime.Lst, #128);
+    WriteLn(Game.Runtime.Lst);
   end;
 end;
 
@@ -162,7 +173,7 @@ begin
   RevealAll := false;
   DrawDialog(104, 24, 392, 254);
 
-  if Game.LocalMapOwned[Island] then HeaderPrompt(4)
+  if Game.Campaign.Flags.LocalMapOwned[Island] then HeaderPrompt(4)
   else HeaderPrompt(5);
   DrawLine(105, 38, 391, 38, 15);
   DrawLine(105, 240, 391, 240, 15);
@@ -172,11 +183,11 @@ begin
   DrawLine(105, 241, 391, 241, 7);
   DrawIslandName(Island, 26, 28);
   DrawText(false, 20, 244, XCaption);
-  Str(Game.Hero.X, Game.TextBuffer);
-  DrawText(false, 23, 244, Game.TextBuffer);
+  Str(Game.Campaign.Hero.X, Game.Runtime.TextBuffer);
+  DrawText(false, 23, 244, Game.Runtime.TextBuffer);
   DrawText(false, 37, 244, YCaption);
-  Str(Game.Hero.Y, Game.TextBuffer);
-  DrawText(false, 40, 244, Game.TextBuffer);
+  Str(Game.Campaign.Hero.Y, Game.Runtime.TextBuffer);
+  DrawText(false, 40, 244, Game.Runtime.TextBuffer);
 Render:
   Phase := 255;
 
@@ -185,8 +196,8 @@ Render:
     begin
       Phase := Phase xor 255;
 
-      if Game.Discovery[Island, X, Y] or RevealAll then
-        case Game.Map[Island, X, Y] of
+      if Game.Campaign.Flags.Discovery[Island, X, Y] or RevealAll then
+        case Game.Campaign.Map[Island, X, Y] of
           32..47: MapDot(Phase, X, Y, 14, CursorOffset, byte(CursorOldColor));
           48..63: MapDot(Phase, X, Y, 9, CursorOffset, byte(CursorOldColor));
           64..79: MapDot(Phase, X, Y, 2, CursorOffset, byte(CursorOldColor));
@@ -212,8 +223,8 @@ Render:
       else MapDot(Phase, X, Y, 0, CursorOffset, byte(CursorOldColor));
     end;
 
-  X := Game.Hero.X * 4 + 120;
-  Y := Game.Hero.Y * 3 + 40;
+  X := Game.Campaign.Hero.X * 4 + 120;
+  Y := Game.Campaign.Hero.Y * 3 + 40;
   DrawText(false, 31, 42, NorthCaption);
   DrawText(false, 31, 228, SouthCaption);
   DrawText(false, 14, 140, WestCaption);
@@ -226,19 +237,21 @@ Render:
     DrawMapCursor(4);
     Delay(50);
     until BIOSKeyPressed;
-    Game.LastScan := ReadScanCode;
+    Game.Runtime.LastScan := ReadScanCode;
 
-    if Game.LastScan = 63 then
+    if Game.Runtime.LastScan = 63 then
     begin
       PrintMap;
       goto Render
     end;
 
-    if (Game.LastScan = 57) and Game.LocalMapOwned[Island] then
+    if (Game.Runtime.LastScan = 57) and Game.Campaign.Flags.LocalMapOwned[Island] then
     begin
       RevealAll := not RevealAll;
       goto Render;
     end;
-  until Game.LastScan = 1;
+  until Game.Runtime.LastScan = 1;
   HeaderPrompt(0);
 end;
+
+end.

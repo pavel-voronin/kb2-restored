@@ -1,15 +1,34 @@
+unit KBBDmg;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+uses KBBType;
+
+procedure AnimateImpact(X, Y: byte);
+procedure RelocateUnit(var X, Y: byte; NewX, NewY: byte);
+function ApplyDamage(Species: byte; Damage: longint; var HitPoints: longint): word;
+function ResolveStrike(var Combat: TBattleState; Attacker, Defender: byte; var AttackerHitPoints,
+    DefenderHitPoints: longint): word;
+procedure ReportEnemyLoss(var Combat: TBattleState; Slot, X, Y: byte);
+procedure AttackUnit(var Combat: TBattleState; AttackerX, AttackerY, DefenderX, DefenderY: byte);
+
+implementation
+
+uses KBState, KBTables, KBGfx, KBSound, Crt, KBBDraw;
+
 procedure AnimateImpact(X, Y: byte);
 begin
   PlayCue(6);
-  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.BattleField[X, Y], 1);
+  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.Runtime.BattleField[X, Y], 1);
   Delay(100);
-  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.BattleField[X, Y], 2);
+  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.Runtime.BattleField[X, Y], 2);
   Delay(100);
-  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.BattleField[X, Y], 4);
+  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.Runtime.BattleField[X, Y], 4);
   Delay(100);
-  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.BattleField[X, Y], 8);
+  DrawMaskedTile(BattleCellOffsets[Y * 6 + X], Game.Runtime.BattleField[X, Y], 8);
   Delay(100);
-  DrawTile(BattleCellOffsets[Y * 6 + X], 0, Game.BattleField[X, Y]);
+  DrawTile(BattleCellOffsets[Y * 6 + X], 0, Game.Runtime.BattleField[X, Y]);
 end;
 
 procedure RemoveFallenUnit(X, Y: byte);
@@ -36,25 +55,25 @@ begin
 
   for I := 1 to Steps do
   begin
-    DrawMaskedTile(Destination, Game.BattleField[X, Y], 1);
-    DrawMaskedTile(Destination, Game.BattleField[X, Y], 2);
-    DrawMaskedTile(Destination, Game.BattleField[X, Y], 4);
-    DrawMaskedTile(Destination, Game.BattleField[X, Y], 8);
+    DrawMaskedTile(Destination, Game.Runtime.BattleField[X, Y], 1);
+    DrawMaskedTile(Destination, Game.Runtime.BattleField[X, Y], 2);
+    DrawMaskedTile(Destination, Game.Runtime.BattleField[X, Y], 4);
+    DrawMaskedTile(Destination, Game.Runtime.BattleField[X, Y], 8);
     Destination := Destination + DeltaOffset;
     Sound(I * 10);
   end;
 
   NoSound;
-  Game.BattleDistances[X, Y] := 0;
-  Game.BattleField[X, Y] := 0;
+  Game.Runtime.BattleDistances[X, Y] := 0;
+  Game.Runtime.BattleField[X, Y] := 0;
   I := X;
 
   repeat
-    case Game.BattleField[I, Y] of
-      0, 48, 64, 80: DrawPictureTile(BattleCellOffsets[I + Y * 6], Game.BattleField[I, Y]);
+    case Game.Runtime.BattleField[I, Y] of
+      0, 48, 64, 80: DrawPictureTile(BattleCellOffsets[I + Y * 6], Game.Runtime.BattleField[I, Y]);
     else
     begin
-      DrawTile(BattleCellOffsets[I + Y * 6], 0, Game.BattleField[I, Y]);
+      DrawTile(BattleCellOffsets[I + Y * 6], 0, Game.Runtime.BattleField[I, Y]);
       DrawCellCount(I, Y);
     end;
     end;
@@ -79,21 +98,21 @@ begin
   Inc(TextY, 32);
   DrawText(true, TextX, TextY, HalvedCaption);
   Delay(400);
-  DrawTile(BattleCellOffsets[Y * 6 + X], 0, Game.BattleField[X, Y]);
+  DrawTile(BattleCellOffsets[Y * 6 + X], 0, Game.Runtime.BattleField[X, Y]);
 end;
 
 procedure RelocateUnit(var X, Y: byte; NewX, NewY: byte);
 begin
   DrawPictureTile(BattleCellOffsets[X + Y * 6], 0);
-  Game.BattleDistances[NewX, NewY] := Game.BattleDistances[X, Y];
-  Game.BattleField[NewX, NewY] := Game.BattleField[X, Y];
-  DrawTile(BattleCellOffsets[NewX + NewY * 6], 0, Game.BattleField[NewX, NewY]);
+  Game.Runtime.BattleDistances[NewX, NewY] := Game.Runtime.BattleDistances[X, Y];
+  Game.Runtime.BattleField[NewX, NewY] := Game.Runtime.BattleField[X, Y];
+  DrawTile(BattleCellOffsets[NewX + NewY * 6], 0, Game.Runtime.BattleField[NewX, NewY]);
 
-  if Game.BattleField[NewX, NewY] > 0 then DrawCellCount(NewX, NewY);
+  if Game.Runtime.BattleField[NewX, NewY] > 0 then DrawCellCount(NewX, NewY);
   if (X <> NewX) or (Y <> NewY) then
   begin
-    Game.BattleField[X, Y] := 0;
-    Game.BattleDistances[X, Y] := 0;
+    Game.Runtime.BattleField[X, Y] := 0;
+    Game.Runtime.BattleDistances[X, Y] := 0;
   end;
 
   X := NewX;
@@ -124,7 +143,8 @@ begin
   end;
 end;
 
-function ResolveStrike(Attacker, Defender: byte; var AttackerHitPoints, DefenderHitPoints: longint): word;
+function ResolveStrike(var Combat: TBattleState; Attacker, Defender: byte; var AttackerHitPoints,
+    DefenderHitPoints: longint): word;
 var
   Count: word;
   Temporary, Damage: longint;
@@ -135,8 +155,8 @@ begin
   Damage := CreatureDefinitions[Attacker].Attack;
   Temporary := CreatureDefinitions[Defender].Defense;
 
-  if Attacker = Game.WeeklySpecies then Damage := Game.DamageBonus + Damage * Count
-  else Damage := Game.DamageBonus + (Random(Damage * Count * 2 div 3) + Damage * Count div 3);
+  if Attacker = Game.Campaign.WeeklySpecies then Damage := Game.Campaign.DamageBonus + Damage * Count
+  else Damage := Game.Campaign.DamageBonus + (Random(Damage * Count * 2 div 3) + Damage * Count div 3);
   case Attacker of
     12: Inc(AttackerHitPoints, Damage);
     15: if not (Defender in [19, 22, 23]) then
@@ -202,29 +222,29 @@ begin
   ResolveStrike := ApplyDamage(Defender, Damage, DefenderHitPoints);
 end;
 
-procedure ReportEnemyLoss(Slot, X, Y: byte);
+procedure ReportEnemyLoss(var Combat: TBattleState; Slot, X, Y: byte);
 begin
-  if Game.BattleDistances[X, Y] <= Game.BattleTextColumn then
+  if Game.Runtime.BattleDistances[X, Y] <= Game.Runtime.BattleTextColumn then
   begin
     RemoveFallenUnit(X, Y);
     Combat.Enemy[Slot].Species := 100;
     Dec(Combat.EnemyCount);
     DrawPictureTile(BattleCellOffsets[Y * 6 + X], 0);
 
-    if Combat.EnemyCount = 0 then Game.BattleResult := 1;
+    if Combat.EnemyCount = 0 then Game.Runtime.BattleResult := 1;
   end
   else
   begin
-    Game.BattleDistances[X, Y] := Game.BattleDistances[X, Y] - Game.BattleTextColumn;
-    Combat.Enemy[Slot].Count := Combat.Enemy[Slot].Count - Game.BattleTextColumn;
+    Game.Runtime.BattleDistances[X, Y] := Game.Runtime.BattleDistances[X, Y] - Game.Runtime.BattleTextColumn;
+    Combat.Enemy[Slot].Count := Combat.Enemy[Slot].Count - Game.Runtime.BattleTextColumn;
     Combat.Enemy[Slot].AttackPower := CreatureDefinitions[Combat.Enemy[Slot].Species].Attack *
-      Game.BattleDistances[X, Y];
-    DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.BattleField[X, Y]);
+      Game.Runtime.BattleDistances[X, Y];
+    DrawTile(BattleCellOffsets[X + Y * 6], 0, Game.Runtime.BattleField[X, Y]);
     DrawCellCount(X, Y);
   end;
 end;
 
-procedure AttackUnit(AttackerX, AttackerY, DefenderX, DefenderY: byte);
+procedure AttackUnit(var Combat: TBattleState; AttackerX, AttackerY, DefenderX, DefenderY: byte);
 var
   Attacker, Defender: TCombatUnit;
   OldHitPoints: longint;
@@ -234,35 +254,35 @@ var
 begin
   AnimateImpact(DefenderX, DefenderY);
 
-  if Game.BattleField[AttackerX, AttackerY] > 111 then
+  if Game.Runtime.BattleField[AttackerX, AttackerY] > 111 then
   begin
-    AttackerSlot := (Game.BattleField[AttackerX, AttackerY] - 112) div 3;
+    AttackerSlot := (Game.Runtime.BattleField[AttackerX, AttackerY] - 112) div 3;
     Attacker := Combat.Player[AttackerSlot];
     AttackerIsPlayer := true;
   end
   else
   begin
-    AttackerSlot := (Game.BattleField[AttackerX, AttackerY] - 32) div 3;
+    AttackerSlot := (Game.Runtime.BattleField[AttackerX, AttackerY] - 32) div 3;
     Attacker := Combat.Enemy[AttackerSlot];
     AttackerIsPlayer := false;
   end;
 
-  if Game.BattleField[DefenderX, DefenderY] > 111 then
+  if Game.Runtime.BattleField[DefenderX, DefenderY] > 111 then
   begin
-    DefenderSlot := (Game.BattleField[DefenderX, DefenderY] - 112) div 3;
+    DefenderSlot := (Game.Runtime.BattleField[DefenderX, DefenderY] - 112) div 3;
     Defender := Combat.Player[DefenderSlot];
     DefenderIsPlayer := true;
   end
   else
   begin
-    DefenderSlot := (Game.BattleField[DefenderX, DefenderY] - 32) div 3;
+    DefenderSlot := (Game.Runtime.BattleField[DefenderX, DefenderY] - 32) div 3;
     Defender := Combat.Enemy[DefenderSlot];
     DefenderIsPlayer := false;
   end;
 
   OldHitPoints := Attacker.HitPoints;
   Combat.VampireInitialCount := Attacker.InitialCount;
-  Killed := ResolveStrike(Attacker.Species, Defender.Species, Attacker.HitPoints, Defender.HitPoints);
+  Killed := ResolveStrike(Combat, Attacker.Species, Defender.Species, Attacker.HitPoints, Defender.HitPoints);
 
   if Combat.DemonHalved then
   begin
@@ -273,7 +293,7 @@ begin
   if OldHitPoints < Attacker.HitPoints then
   begin
     Attacker.Count := Attacker.HitPoints div CreatureDefinitions[Attacker.Species].Defense;
-    Game.BattleDistances[AttackerX, AttackerY] := Attacker.Count;
+    Game.Runtime.BattleDistances[AttackerX, AttackerY] := Attacker.Count;
     DrawCellCount(AttackerX, AttackerY);
   end;
 
@@ -281,18 +301,18 @@ begin
   begin
     if Killed >= Defender.Count then
     begin
-      if Game.BattleField[DefenderX, DefenderY] > 111 then
+      if Game.Runtime.BattleField[DefenderX, DefenderY] > 111 then
       begin
         Dec(Combat.PlayerCount);
         Dec(Combat.ReadyPlayerCount);
 
-        if Combat.PlayerCount = 0 then Game.BattleResult := 2;
+        if Combat.PlayerCount = 0 then Game.Runtime.BattleResult := 2;
       end
       else
       begin
         Dec(Combat.EnemyCount);
 
-        if Combat.EnemyCount = 0 then Game.BattleResult := 1;
+        if Combat.EnemyCount = 0 then Game.Runtime.BattleResult := 1;
       end;
 
       Defender.Species := 100;
@@ -301,14 +321,14 @@ begin
     else
     begin
       Defender.Count := Defender.Count - Killed;
-      Game.BattleDistances[DefenderX, DefenderY] := Defender.Count;
+      Game.Runtime.BattleDistances[DefenderX, DefenderY] := Defender.Count;
       Defender.AttackPower := CreatureDefinitions[Defender.Species].Attack * Defender.Count;
     end;
   end;
 
-  if Game.BattleResult < 1 then
+  if Game.Runtime.BattleResult < 1 then
   begin
-    DrawTile(BattleCellOffsets[DefenderX + DefenderY * 6], 0, Game.BattleField[DefenderX, DefenderY]);
+    DrawTile(BattleCellOffsets[DefenderX + DefenderY * 6], 0, Game.Runtime.BattleField[DefenderX, DefenderY]);
     DrawCellCount(DefenderX, DefenderY);
   end;
 
@@ -317,3 +337,5 @@ begin
   if DefenderIsPlayer then Combat.Player[DefenderSlot] := Defender
   else Combat.Enemy[DefenderSlot] := Defender;
 end;
+
+end.

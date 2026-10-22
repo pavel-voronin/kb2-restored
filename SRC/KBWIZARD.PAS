@@ -1,3 +1,14 @@
+unit KBWizard;
+{$G+,R-,S-,I+,A+}
+
+interface
+
+procedure WizardVisit;
+
+implementation
+
+uses KBAdvent, KBWorld, KBEcon, KBHud, KBReport, KBTables, KBUI, KBGfx, KBInput, Crt, KBState;
+
 procedure WizardVisit;
 
 const
@@ -28,30 +39,30 @@ begin
   DrawDialog(8, 230, 488, 320);
   DrawText(false, 2, 240, HireWorkersCaption);
   DrawText(false, 42, 240, GoldCaption);
-  Str(Game.Gold, Game.TextBuffer);
-  DrawText(false, 51, 240, Game.TextBuffer);
+  Str(Game.Campaign.Gold, Game.Runtime.TextBuffer);
+  DrawText(false, 51, 240, Game.Runtime.TextBuffer);
   DrawText(false, 2, 256, CarpentersMenuItem);
   DrawText(false, 2, 264, WoodcuttersMenuItem);
   DrawText(false, 2, 272, DiggersMenuItem);
   DrawText(false, 2, 280, StonecuttersMenuItem);
 
   repeat
-    Game.LastScan := Ord(ReadKey);
-    case Game.LastScan of
+    Game.Runtime.LastScan := Ord(ReadKey);
+    case Game.Runtime.LastScan of
       49: if not PaymentFailed(500) then
-        if Game.MagicPower = 0 then Inc(Game.Carpenters)
-        else Inc(Game.Carpenters, Game.MagicPower);
+        if Game.Campaign.MagicPower = 0 then Inc(Game.Campaign.Carpenters)
+        else Inc(Game.Campaign.Carpenters, Game.Campaign.MagicPower);
       50: if not PaymentFailed(1000) then
-        if Game.MagicPower = 0 then Inc(Game.Woodcutters)
-        else Inc(Game.Woodcutters, Game.MagicPower);
+        if Game.Campaign.MagicPower = 0 then Inc(Game.Campaign.Woodcutters)
+        else Inc(Game.Campaign.Woodcutters, Game.Campaign.MagicPower);
       51: if not PaymentFailed(500) then
-        if Game.MagicPower = 0 then Inc(Game.Diggers)
-        else Inc(Game.Diggers, Game.MagicPower);
+        if Game.Campaign.MagicPower = 0 then Inc(Game.Campaign.Diggers)
+        else Inc(Game.Campaign.Diggers, Game.Campaign.MagicPower);
       52: if not PaymentFailed(2000) then
-        if Game.MagicPower = 0 then Inc(Game.Stonecutters)
-        else Inc(Game.Stonecutters, Game.MagicPower);
+        if Game.Campaign.MagicPower = 0 then Inc(Game.Campaign.Stonecutters)
+        else Inc(Game.Campaign.Stonecutters, Game.Campaign.MagicPower);
     end;
-  until (Game.LastScan in [49..52]) or (Game.LastScan = 27);
+  until (Game.Runtime.LastScan in [49..52]) or (Game.Runtime.LastScan = 27);
 end;
 
 procedure WizardContractBoard;
@@ -63,25 +74,29 @@ const
   YCaption = 'Кооpдината по Y:';
 
 begin
-  if Game.ContractIsland < 6 then
+  if Game.Campaign.ContractIsland < 6 then
   begin
     DrawDialog(8, 230, 488, 320);
     DrawText(false, 2, 240, ContractCaption);
     DrawText(false, 2, 256, IslandCaption);
     DrawText(false, 2, 272, XCaption);
     DrawText(false, 2, 280, YCaption);
-    DrawIslandName(Game.Contracts[Game.ContractIsland, Game.ContractSlot].Island, 13, 256);
-    Str(Game.Castles[Game.Contracts[Game.ContractIsland, Game.ContractSlot].Island,
-      Game.Contracts[Game.ContractIsland, Game.ContractSlot].Slot].X: 2, Game.TextBuffer);
-    DrawText(false, 19, 272, Game.TextBuffer);
-    Str(Game.Castles[Game.Contracts[Game.ContractIsland, Game.ContractSlot].Island,
-      Game.Contracts[Game.ContractIsland, Game.ContractSlot].Slot].Y: 2, Game.TextBuffer);
-    DrawText(false, 19, 280, Game.TextBuffer);
+    DrawIslandName(Game.Campaign.Contracts[Game.Campaign.ContractIsland, Game.Campaign.ContractSlot].Island, 13, 256);
+    Str(Game.Campaign.Castles[Game.Campaign.Contracts[Game.Campaign.ContractIsland,
+    Game.Campaign.ContractSlot].Island,
+      Game.Campaign.Contracts[Game.Campaign.ContractIsland, Game.Campaign.ContractSlot].Slot].X: 2,
+    Game.Runtime.TextBuffer);
+    DrawText(false, 19, 272, Game.Runtime.TextBuffer);
+    Str(Game.Campaign.Castles[Game.Campaign.Contracts[Game.Campaign.ContractIsland,
+    Game.Campaign.ContractSlot].Island,
+      Game.Campaign.Contracts[Game.Campaign.ContractIsland, Game.Campaign.ContractSlot].Slot].Y: 2,
+    Game.Runtime.TextBuffer);
+    DrawText(false, 19, 280, Game.Runtime.TextBuffer);
     HeaderPrompt(5);
 
     repeat
-      Game.LastScan := ReadScanCode
-    until Game.LastScan = 1;
+      Game.Runtime.LastScan := ReadScanCode
+    until Game.Runtime.LastScan = 1;
   end
   else ShowNotice(8);
 end;
@@ -102,28 +117,29 @@ var
   Island: byte;
 
 begin
-  if Game.ShipOwned then Game.ShipIsland := Game.Island;
+  if Game.Campaign.Flags.ShipOwned then Game.Campaign.ShipIsland := Game.Campaign.Island;
   DrawDialog(8, 230, 488, 320);
   DrawText(false, 2, 240, WizardCaption);
   DrawText(false, 2, 256, PlainsMenuItem);
   DrawText(false, 2, 264, SwamplandMenuItem);
 
-  if Game.UnlockedIslands > 1 then DrawText(false, 2, 272, TaigaMenuItem);
-  if Game.UnlockedIslands > 2 then DrawText(false, 2, 280, AlpineMenuItem);
-  if Game.UnlockedIslands > 3 then DrawText(false, 2, 288, DesertMenuItem);
+  if Game.Campaign.UnlockedIslands > 1 then DrawText(false, 2, 272, TaigaMenuItem);
+  if Game.Campaign.UnlockedIslands > 2 then DrawText(false, 2, 280, AlpineMenuItem);
+  if Game.Campaign.UnlockedIslands > 3 then DrawText(false, 2, 288, DesertMenuItem);
 Retry:
   repeat
-    Game.LastScan := Ord(ReadKey)
-  until (Game.LastScan in [49..53]) or (Game.LastScan = 27);
+    Game.Runtime.LastScan := Ord(ReadKey)
+  until (Game.Runtime.LastScan in [49..53]) or (Game.Runtime.LastScan = 27);
 
-  if Game.LastScan = 27 then Exit;
-  Val(Chr(Game.LastScan), Island, Game.GenerationLimit);
-  if Game.UnlockedIslands + 1 < Island then goto Retry;
+  if Game.Runtime.LastScan = 27 then Exit;
+  Val(Chr(Game.Runtime.LastScan), Island, Game.World.GenerationLimit);
+  if Game.Campaign.UnlockedIslands + 1 < Island then goto Retry;
   EnterIsland(Island);
 
-  if Game.UnlockedIslands + 1 = Island then Game.UnlockedIslands := Island;
+  if Game.Campaign.UnlockedIslands + 1 = Island then Game.Campaign.UnlockedIslands := Island;
   RandomHeroLanding;
-  if Game.HighestVisitedIsland < Game.Island then Game.HighestVisitedIsland := Game.Island;
+  if Game.Campaign.HighestVisitedIsland < Game.Campaign.Island then Game.Campaign.HighestVisitedIsland :=
+    Game.Campaign.Island;
 end;
 
 procedure InstructionPage(Spell: byte);
@@ -146,9 +162,9 @@ var
 begin
   DrawDialog(8, 210, 488, 320);
   HeaderPrompt(5);
-  Title := Game.SpellTitles[Spell] + SpellCaption;
+  Title := Game.Runtime.SpellTitles[Spell] + SpellCaption;
   DrawText(false, 20, 216, Title);
-  Game.SpellUsed[Spell] := true;
+  Game.Campaign.Flags.SpellUsed[Spell] := true;
   DrawText(false, 2, 230, SpellEffects[Spell]);
 
   if Spell < 7 then
@@ -170,8 +186,8 @@ begin
   end;
 
   repeat
-    Game.LastScan := ReadScanCode
-  until Game.LastScan = 1;
+    Game.Runtime.LastScan := ReadScanCode
+  until Game.Runtime.LastScan = 1;
 end;
 
 procedure InstructionIntro(Basic: boolean);
@@ -203,7 +219,7 @@ const
 begin
   DrawDialog(8, 210, 488, 320);
   HeaderPrompt(5);
-  Game.InstructionsShown := true;
+  Game.Campaign.Flags.InstructionsShown := true;
 
   if Basic then
   begin
@@ -235,8 +251,8 @@ begin
   end;
 
   repeat
-    Game.LastScan := ReadScanCode
-  until Game.LastScan = 1;
+    Game.Runtime.LastScan := ReadScanCode
+  until Game.Runtime.LastScan = 1;
 end;
 
 procedure InstructionBook;
@@ -247,16 +263,16 @@ var
   I: byte;
 
 begin
-  if Game.Difficulty = 3 then
+  if Game.Campaign.Difficulty = 3 then
   begin
     if CountRitualSpells = 0 then
-      if Game.InstructionsShown then ShowNotice(16)
+      if Game.Campaign.Flags.InstructionsShown then ShowNotice(16)
       else InstructionIntro(true)
     else
-      if Game.InstructionsShown then
+      if Game.Campaign.Flags.InstructionsShown then
       begin
 ShowPages:
-        for I := 0 to 7 do if Game.SpellAvailable[I] then InstructionPage(I);
+        for I := 0 to 7 do if Game.Campaign.Flags.SpellAvailable[I] then InstructionPage(I);
       end
       else
       begin
@@ -273,18 +289,18 @@ begin
   Successful := true;
   DrawText(false, 2, 240, WizardCaption);
   DrawText(false, 42, 240, GoldCaption);
-  Str(Game.Gold, Game.TextBuffer);
-  DrawText(false, 51, 240, Game.TextBuffer);
+  Str(Game.Campaign.Gold, Game.Runtime.TextBuffer);
+  DrawText(false, 51, 240, Game.Runtime.TextBuffer);
   DrawText(false, 2, 256, WorkersMenuItem);
 
-  if Game.WizardRelations[Game.Island] > 0 then DrawText(false, 2, 264, MagicPowerMenuItem);
-  if Game.WizardRelations[Game.Island] > 1 then DrawText(false, 2, 272, IslandTravelMenuItem);
-  if Game.WizardRelations[Game.Island] > 2 then
-    if Game.MagicPower < 10 then DrawText(false, 2, 280, CastleHintMenuItem)
+  if Game.Campaign.WizardRelations[Game.Campaign.Island] > 0 then DrawText(false, 2, 264, MagicPowerMenuItem);
+  if Game.Campaign.WizardRelations[Game.Campaign.Island] > 1 then DrawText(false, 2, 272, IslandTravelMenuItem);
+  if Game.Campaign.WizardRelations[Game.Campaign.Island] > 2 then
+    if Game.Campaign.MagicPower < 10 then DrawText(false, 2, 280, CastleHintMenuItem)
     else DrawText(false, 2, 280, SpellHintMenuItem);
-  if Game.WizardRelations[Game.Island] > 3 then DrawText(false, 2, 288, TornadoMenuItem);
+  if Game.Campaign.WizardRelations[Game.Campaign.Island] > 3 then DrawText(false, 2, 288, TornadoMenuItem);
 
-  if Game.WizardRelations[Game.Island] > 4 then
+  if Game.Campaign.WizardRelations[Game.Campaign.Island] > 4 then
   begin
     repeat
       Offer := Random(10);
@@ -293,56 +309,60 @@ begin
     DrawText(false, 2, 296, WizardNames[Offer]);
   end;
 
-  Game.LastScan := Ord(ReadKey);
-  case Game.LastScan of
+  Game.Runtime.LastScan := Ord(ReadKey);
+  case Game.Runtime.LastScan of
     49: HireWorkers;
-    50: if Game.WizardRelations[Game.Island] > 0 then
+    50: if Game.Campaign.WizardRelations[Game.Campaign.Island] > 0 then
       if not PaymentFailed(5000) then
       begin
-        Inc(Game.MagicPower);
+        Inc(Game.Campaign.MagicPower);
         RefreshMagic;
         RefreshDwellings;
       end
       else Successful := false;
-    51: if Game.WizardRelations[Game.Island] > 1 then
+    51: if Game.Campaign.WizardRelations[Game.Campaign.Island] > 1 then
       if not PaymentFailed(5000) then IslandTravel
       else Successful := false;
-    52: if Game.WizardRelations[Game.Island] > 2 then
-      if Game.MagicPower < 10 then
+    52: if Game.Campaign.WizardRelations[Game.Campaign.Island] > 2 then
+      if Game.Campaign.MagicPower < 10 then
         if not PaymentFailed(1000) then WizardContractBoard
         else Successful := false
       else InstructionBook;
-    53: if Game.WizardRelations[Game.Island] > 3 then
-      if not PaymentFailed(10000) then Inc(Game.TornadoCharges)
+    53: if Game.Campaign.WizardRelations[Game.Campaign.Island] > 3 then
+      if not PaymentFailed(10000) then Inc(Game.Campaign.TornadoCharges)
       else Successful := false;
-    54: if Game.WizardRelations[Game.Island] > 4 then
+    54: if Game.Campaign.WizardRelations[Game.Campaign.Island] > 4 then
       if not PaymentFailed(WizardPrices[Offer]) then
         case Offer of
-          1: for I := 1 to 5 do Game.Towns[Game.Island, I].Scroll := Random(13);
-          2: if Game.WizardVisited[Game.Island] and 2 = 0 then
+          1: for I := 1 to 5 do Game.Campaign.Towns[Game.Campaign.Island, I].Scroll := Random(13);
+          2: if Game.Campaign.WizardVisited[Game.Campaign.Island] and 2 = 0 then
           begin
-            Game.WizardVisited[Game.Island] := Game.WizardVisited[Game.Island] or 2;
-            Inc(Game.MapParts);
+            Game.Campaign.WizardVisited[Game.Campaign.Island] := Game.Campaign.WizardVisited[Game.Campaign.Island]
+    or 2;
+            Inc(Game.Campaign.MapParts);
             RefreshMapParts;
           end;
 
           3: for I := 1 to 5 do
           begin
-            Game.Towns[Game.Island, I].Workers[1] := WorkerCapacities[Game.Island, I, 0];
-            Game.Towns[Game.Island, I].Workers[2] := WorkerCapacities[Game.Island, I, 1];
-            Game.Towns[Game.Island, I].Workers[3] := WorkerCapacities[Game.Island, I, 2];
-            Game.Towns[Game.Island, I].Workers[4] := WorkerCapacities[Game.Island, I, 3];
+            Game.Campaign.Towns[Game.Campaign.Island, I].Workers[1] := WorkerCapacities[Game.Campaign.Island, I, 0];
+            Game.Campaign.Towns[Game.Campaign.Island, I].Workers[2] := WorkerCapacities[Game.Campaign.Island, I, 1];
+            Game.Campaign.Towns[Game.Campaign.Island, I].Workers[3] := WorkerCapacities[Game.Campaign.Island, I, 2];
+            Game.Campaign.Towns[Game.Campaign.Island, I].Workers[4] := WorkerCapacities[Game.Campaign.Island, I, 3];
           end;
 
-          4: for I := 0 to 7 do Game.Dwellings[Game.Island, I].Count :=
-            WeeklyDwellingCapacities[Game.Dwellings[Game.Island, I].Species];
-          5: TransmuteDwellings(Game.Island);
-          6: Inc(Game.DamageBonus, 1000);
+          4: for I := 0 to 7 do Game.Campaign.Dwellings[Game.Campaign.Island, I].Count :=
+            WeeklyDwellingCapacities[Game.Campaign.Dwellings[Game.Campaign.Island, I].Species];
+          5: TransmuteDwellings(Game.Campaign.Island);
+          6: Inc(Game.Campaign.DamageBonus, 1000);
         end;
   end;
 
-  byte(Game.WizardAge) := Game.Difficulty + 1;
-  MoveRoamer(Game.Island, 12, Game.WizardPosition);
-  if Successful and (Game.WizardRelations[Game.Island] < 10) then Inc(Game.WizardRelations[Game.Island]);
+  byte(Game.World.WizardAge) := Game.Campaign.Difficulty + 1;
+  MoveRoamer(Game.Campaign.Island, 12, Game.World.WizardPosition);
+  if Successful and (Game.Campaign.WizardRelations[Game.Campaign.Island] < 10) then
+    Inc(Game.Campaign.WizardRelations[Game.Campaign.Island]);
   HeaderPrompt(0);
 end;
+
+end.

@@ -5,8 +5,6 @@ interface
 
 procedure RandomizeGame;
 procedure UseRandomSeed(Seed: longint);
-procedure UseClockSeed;
-
 implementation
 
 var
