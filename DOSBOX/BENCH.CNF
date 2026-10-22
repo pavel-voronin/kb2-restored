@@ -1,0 +1,25 @@
+[dosbox]
+machine=ega
+memsize=1
+
+[cpu]
+core=normal
+cputype=286
+cycles=fixed 3000
+
+[video]
+vmemsize=0
+vmemsizekb=256
+
+[dos]
+xms=false
+ems=false
+umb=false
+
+[mixer]
+nosound=true
+
+[autoexec]
+mount c .
+c:
+call BRUN.BAT

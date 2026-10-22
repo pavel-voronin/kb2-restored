@@ -8,6 +8,7 @@ cputype=286
 cycles=fixed 700
 
 [video]
+vmemsize=0
 vmemsizekb=256
 
 [dos]
