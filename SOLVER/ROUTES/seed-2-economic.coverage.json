@@ -1,0 +1,150 @@
+{
+  "seed": 2,
+  "inputs": 972,
+  "idle_polls": 142455534,
+  "ending": {
+    "kind": "exit",
+    "code": 0
+  },
+  "summary": {
+    "island": 1,
+    "hero": [
+      6,
+      45
+    ],
+    "gold": 135360,
+    "power": 3,
+    "leadership": 50,
+    "weeks": 150,
+    "days": 121,
+    "parts": 5,
+    "unlocked": 5,
+    "ship": true,
+    "sailing": true,
+    "grace": 19,
+    "army": [],
+    "wizard": [
+      45,
+      52
+    ]
+  },
+  "calls": {
+    "BoardShip": 1,
+    "CastTornado": 6,
+    "EndWeek": 50,
+    "HeroStatus": 224,
+    "PaperScrollVisit": 10,
+    "PrepareCampaign": 1,
+    "PrepareSave": 1,
+    "RegrowMountain": 6,
+    "SandLanding": 9,
+    "SeaVoyage": 1,
+    "TownVisit": 1,
+    "TreasureVisit": 5,
+    "WizardVisit": 51,
+    "WorkersMenu": 9,
+    "WriteCampaign": 1
+  },
+  "first_call": {
+    "PrepareCampaign": {
+      "input": 5,
+      "calls": 1
+    },
+    "PrepareSave": {
+      "input": 5,
+      "calls": 1
+    },
+    "WriteCampaign": {
+      "input": 5,
+      "calls": 1
+    },
+    "TreasureVisit": {
+      "input": 12,
+      "calls": 1
+    },
+    "SandLanding": {
+      "input": 23,
+      "calls": 1
+    },
+    "EndWeek": {
+      "input": 72,
+      "calls": 1
+    },
+    "WizardVisit": {
+      "input": 120,
+      "calls": 1
+    },
+    "HeroStatus": {
+      "input": 122,
+      "calls": 1
+    },
+    "CastTornado": {
+      "input": 351,
+      "calls": 1
+    },
+    "PaperScrollVisit": {
+      "input": 356,
+      "calls": 1
+    },
+    "WorkersMenu": {
+      "input": 515,
+      "calls": 1
+    },
+    "RegrowMountain": {
+      "input": 775,
+      "calls": 1
+    },
+    "TownVisit": {
+      "input": 965,
+      "calls": 1
+    },
+    "BoardShip": {
+      "input": 969,
+      "calls": 1
+    },
+    "SeaVoyage": {
+      "input": 970,
+      "calls": 1
+    }
+  },
+  "not_called": [
+    "AdventureHelp",
+    "AdventureMagic",
+    "ApplyDamage",
+    "ArmyOverview",
+    "AttackUnit",
+    "Battle",
+    "BattleHelp",
+    "BlackMage",
+    "CargoReport",
+    "CastleVisit",
+    "CheckLeadership",
+    "Credits",
+    "CurrentContract",
+    "DefeatReport",
+    "DismissArmy",
+    "DwellingVisit",
+    "EnemyPhase",
+    "GameOver",
+    "MagicMenu",
+    "MapVisit",
+    "MovePlayerUnit",
+    "NextPlayerUnit",
+    "PaintBattleTerrain",
+    "ReadCampaign",
+    "RelocateUnit",
+    "ReserveMenu",
+    "ResolveStrike",
+    "RitualGuardianVisit",
+    "RitualSpellReport",
+    "SaveNamedGame",
+    "SearchRitualSpell",
+    "SelectSpellTarget",
+    "ShootUnit",
+    "TalkingStoneVisit",
+    "UncontrolledTurn",
+    "UndergroundVisit",
+    "VictoryReport",
+    "WanderingArmyVisit"
+  ]
+}

@@ -1,0 +1,239 @@
+{
+  "seed": 1,
+  "inputs": 2249,
+  "idle_polls": 325884918,
+  "ending": {
+    "kind": "exit",
+    "code": 0
+  },
+  "summary": {
+    "island": 1,
+    "hero": [
+      19,
+      53
+    ],
+    "gold": 2529209,
+    "power": 22,
+    "leadership": 1947,
+    "weeks": 102,
+    "days": 159,
+    "parts": 5,
+    "unlocked": 5,
+    "ship": true,
+    "sailing": true,
+    "grace": 0,
+    "army": [
+      [
+        20,
+        4
+      ],
+      [
+        23,
+        1
+      ],
+      [
+        17,
+        17
+      ],
+      [
+        18,
+        16
+      ],
+      [
+        22,
+        3
+      ]
+    ],
+    "wizard": [
+      8,
+      6
+    ]
+  },
+  "calls": {
+    "ApplyDamage": 6,
+    "AttackUnit": 6,
+    "Battle": 1,
+    "BlackMage": 2,
+    "BoardShip": 1,
+    "CastTornado": 6,
+    "CheckLeadership": 1,
+    "DwellingVisit": 5,
+    "EndWeek": 98,
+    "EnemyPhase": 1,
+    "HeroStatus": 507,
+    "MovePlayerUnit": 3,
+    "NextPlayerUnit": 8,
+    "PaintBattleTerrain": 1,
+    "PaperScrollVisit": 10,
+    "PrepareCampaign": 1,
+    "PrepareSave": 1,
+    "RegrowMountain": 18,
+    "RelocateUnit": 9,
+    "ResolveStrike": 6,
+    "SandLanding": 123,
+    "SeaVoyage": 1,
+    "SelectSpellTarget": 3,
+    "ShootUnit": 2,
+    "TownVisit": 1,
+    "TreasureVisit": 32,
+    "UncontrolledTurn": 1,
+    "VictoryReport": 1,
+    "WanderingArmyVisit": 1,
+    "WizardVisit": 93,
+    "WorkersMenu": 10,
+    "WriteCampaign": 1
+  },
+  "first_call": {
+    "PrepareCampaign": {
+      "input": 5,
+      "calls": 1
+    },
+    "PrepareSave": {
+      "input": 5,
+      "calls": 1
+    },
+    "WriteCampaign": {
+      "input": 5,
+      "calls": 1
+    },
+    "TreasureVisit": {
+      "input": 16,
+      "calls": 1
+    },
+    "SandLanding": {
+      "input": 120,
+      "calls": 1
+    },
+    "EndWeek": {
+      "input": 157,
+      "calls": 1
+    },
+    "WizardVisit": {
+      "input": 225,
+      "calls": 1
+    },
+    "HeroStatus": {
+      "input": 227,
+      "calls": 1
+    },
+    "BlackMage": {
+      "input": 479,
+      "calls": 1
+    },
+    "PaperScrollVisit": {
+      "input": 509,
+      "calls": 1
+    },
+    "CastTornado": {
+      "input": 818,
+      "calls": 1
+    },
+    "WorkersMenu": {
+      "input": 1796,
+      "calls": 1
+    },
+    "RegrowMountain": {
+      "input": 1798,
+      "calls": 1
+    },
+    "DwellingVisit": {
+      "input": 2017,
+      "calls": 1
+    },
+    "WanderingArmyVisit": {
+      "input": 2164,
+      "calls": 1
+    },
+    "Battle": {
+      "input": 2165,
+      "calls": 1
+    },
+    "PaintBattleTerrain": {
+      "input": 2165,
+      "calls": 1
+    },
+    "EnemyPhase": {
+      "input": 2165,
+      "calls": 1
+    },
+    "RelocateUnit": {
+      "input": 2166,
+      "calls": 6
+    },
+    "AttackUnit": {
+      "input": 2166,
+      "calls": 1
+    },
+    "ResolveStrike": {
+      "input": 2166,
+      "calls": 1
+    },
+    "ApplyDamage": {
+      "input": 2166,
+      "calls": 1
+    },
+    "NextPlayerUnit": {
+      "input": 2166,
+      "calls": 1
+    },
+    "CheckLeadership": {
+      "input": 2166,
+      "calls": 1
+    },
+    "UncontrolledTurn": {
+      "input": 2166,
+      "calls": 1
+    },
+    "ShootUnit": {
+      "input": 2168,
+      "calls": 1
+    },
+    "SelectSpellTarget": {
+      "input": 2183,
+      "calls": 1
+    },
+    "MovePlayerUnit": {
+      "input": 2188,
+      "calls": 1
+    },
+    "VictoryReport": {
+      "input": 2207,
+      "calls": 1
+    },
+    "TownVisit": {
+      "input": 2243,
+      "calls": 1
+    },
+    "BoardShip": {
+      "input": 2246,
+      "calls": 1
+    },
+    "SeaVoyage": {
+      "input": 2247,
+      "calls": 1
+    }
+  },
+  "not_called": [
+    "AdventureHelp",
+    "AdventureMagic",
+    "ArmyOverview",
+    "BattleHelp",
+    "CargoReport",
+    "CastleVisit",
+    "Credits",
+    "CurrentContract",
+    "DefeatReport",
+    "DismissArmy",
+    "GameOver",
+    "MagicMenu",
+    "MapVisit",
+    "ReadCampaign",
+    "ReserveMenu",
+    "RitualGuardianVisit",
+    "RitualSpellReport",
+    "SaveNamedGame",
+    "SearchRitualSpell",
+    "TalkingStoneVisit",
+    "UndergroundVisit"
+  ]
+}

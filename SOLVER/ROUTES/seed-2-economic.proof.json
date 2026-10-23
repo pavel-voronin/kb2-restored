@@ -1,0 +1,23 @@
+{
+  "route_sha256": "7b61b8a7ceffe543cf7850882668aab8ff8ba625e9107481b012828565087d8e",
+  "input_binary_sha256": "d2db1787e4ed04cd6c0cb4257d2f3700560648a8b27835ae64551c48e0931eda",
+  "reference": "cedabcca6bd3b2a19c55b0a778fe6ad2057fba8c",
+  "checks": [
+    {
+      "variant": "CUR",
+      "checkpoints": 535,
+      "campaign_bytes_per_checkpoint": 46816,
+      "raw_states_sha256": "2dc43ccd46c495a4042c8ae63e158f7904b4c7a95a7e671e24553810363577b0",
+      "result": "010000",
+      "executable_sha256": "4047ced12b54d39b6a8d4f12c81889fd12914d39bddaa42a002dcef6085b40b7"
+    },
+    {
+      "variant": "REF",
+      "checkpoints": 535,
+      "campaign_bytes_per_checkpoint": 46816,
+      "raw_states_sha256": "2dc43ccd46c495a4042c8ae63e158f7904b4c7a95a7e671e24553810363577b0",
+      "result": "010000",
+      "executable_sha256": "68afd0e981489dcd615ec3fc9af7a8e06560049290dd6ae8357e73bbfc71eb36"
+    }
+  ]
+}
